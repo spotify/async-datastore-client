@@ -1,0 +1,14 @@
+async-datastore-client
+Copyright 2011-2015 Spotify AB
+
+This product includes software developed at
+Spotify AB (http://www.spotify.com/).
+
+This project uses google-cloud-datastore from Google, which is
+licensed with Apache Licence 2.0.
+
+This project uses guava from Google, which is licensed with
+Apache Licence 2.0.
+
+This project uses async-http-client by Jeanfrancois Arcand and
+is licensed with with Apache Licence 2.0.
