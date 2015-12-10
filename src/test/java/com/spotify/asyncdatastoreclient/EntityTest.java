@@ -23,6 +23,7 @@ import com.google.protobuf.ByteString;
 import org.junit.Test;
 
 import java.util.Date;
+import java.util.Optional;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -115,5 +116,13 @@ public class EntityTest {
     assertEquals("Fred Blinge", entity.getString("fullname"));
     assertNull(entity.getString("nickname"));
     assertEquals(2.43, entity.getDouble("height"), 0.01);
+  }
+
+  @Test
+  public void testGetEmptyProperty() throws Exception {
+    final Entity entity = Entity.builder().property("bar", Value.fromString("value").build()).build();
+
+    assertEquals(Optional.empty(), entity.get("foo"));
+    assertEquals(Optional.of("value"), entity.get("bar").map(Value::getString));
   }
 }
