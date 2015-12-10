@@ -104,6 +104,18 @@ public final class Entity {
      * @param value the property value.
      * @return this entity builder.
      */
+    public Builder property(final String name, final Value value) {
+      properties.put(name, value);
+      return this;
+    }
+
+    /**
+     * Set property and its value for this entity.
+     *
+     * @param name the property name to set.
+     * @param value the property value.
+     * @return this entity builder.
+     */
     public Builder property(final String name, final Object value) {
       properties.put(name, Value.builder(value).build());
       return this;
