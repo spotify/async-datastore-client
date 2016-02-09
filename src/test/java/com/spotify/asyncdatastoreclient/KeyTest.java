@@ -23,6 +23,7 @@ import org.junit.Test;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertFalse;
@@ -137,5 +138,14 @@ public class KeyTest {
     assertNull(test4.getKind());
     assertNull(test4.getName());
     assertNull(test4.getId());
+  }
+
+  @Test
+  public void testGetPb() throws Exception {
+    final Key test1 = Key.builder().build();
+    assertEquals("namespace", test1.getPb("namespace").getPartitionId().getNamespace());
+
+    // Passing in null should not throw exception
+    assertNotNull(test1.getPb(null));
   }
 }
