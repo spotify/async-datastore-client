@@ -30,10 +30,10 @@ import static com.google.common.base.MoreObjects.firstNonNull;
  */
 public class DatastoreConfig {
 
-  private static final int DEFAULT_CONNECT_TIMEOUT = 5000;
-  private static final int DEFAULT_MAX_CONNECTIONS = -1;
-  private static final int DEFAULT_REQUEST_TIMEOUTS = 5000;
-  private static final int DEFAULT_REQUEST_RETRIES = 5;
+  private static final Integer DEFAULT_CONNECT_TIMEOUT = 5000;
+  private static final Integer DEFAULT_MAX_CONNECTIONS = -1;
+  private static final Integer DEFAULT_REQUEST_TIMEOUTS = 5000;
+  private static final Integer DEFAULT_REQUEST_RETRIES = 5;
   private static final String DEFAULT_HOST = "https://www.googleapis.com";
   private static final String DEFAULT_VERSION = "v1beta2";
 
@@ -47,10 +47,10 @@ public class DatastoreConfig {
   private final String host;
   private final String version;
 
-  private DatastoreConfig(final int connectTimeout,
-                          final int maxConnections,
-                          final int requestTimeout,
-                          final int requestRetry,
+  private DatastoreConfig(final Integer connectTimeout,
+                          final Integer maxConnections,
+                          final Integer requestTimeout,
+                          final Integer requestRetry,
                           final Credential credential,
                           final String dataset,
                           final String namespace,
@@ -68,10 +68,10 @@ public class DatastoreConfig {
   }
 
   public static class Builder {
-    private int connectTimeout;
-    private int maxConnections;
-    private int requestTimeout;
-    private int requestRetry;
+    private Integer connectTimeout;
+    private Integer maxConnections;
+    private Integer requestTimeout;
+    private Integer requestRetry;
     private Credential credential;
     private String dataset;
     private String namespace;

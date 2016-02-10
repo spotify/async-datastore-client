@@ -384,7 +384,11 @@ public class Key {
   }
 
   DatastoreV1.Key getPb(final String namespace) {
-    return DatastoreV1.Key.newBuilder(key)
-        .setPartitionId(DatastoreV1.PartitionId.newBuilder().setNamespace(namespace)).build();
+    if (namespace == null) {
+      return key;
+    } else {
+      return DatastoreV1.Key.newBuilder(key)
+              .setPartitionId(DatastoreV1.PartitionId.newBuilder().setNamespace(namespace)).build();
+    }
   }
 }
