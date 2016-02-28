@@ -20,24 +20,25 @@ import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.http.protobuf.ProtoHttpContent;
 import com.google.api.services.datastore.DatastoreV1;
 import com.google.common.base.Throwables;
+import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.protobuf.ByteString;
-
 import com.ning.http.client.AsyncHttpClient;
 import com.ning.http.client.AsyncHttpClientConfig;
 import com.ning.http.client.Response;
 import com.ning.http.client.extra.ListenableFutureAdapter;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 import java.util.zip.GZIPInputStream;
 
 /**
@@ -320,6 +321,16 @@ public class Datastore implements Closeable {
   }
 
   /**
+   * Execute a multi-keyed query statement.
+   *
+   * @param statements the statements to execute.
+   * @return the result of the query request.
+   */
+  public QueryResult execute(final List<KeyQuery> statements) throws DatastoreException {
+    return Futures.get(executeAsync(statements), DatastoreException.class);
+  }
+
+  /**
    * Execute a keyed query statement.
    *
    * @param statement the statement to execute.
@@ -327,6 +338,16 @@ public class Datastore implements Closeable {
    */
   public ListenableFuture<QueryResult> executeAsync(final KeyQuery statement) {
     return executeAsync(statement, Futures.immediateFuture(TransactionResult.build()));
+  }
+
+  /**
+   * Execute a multi-keyed query statement.
+   *
+   * @param statements the statements to execute.
+   * @return the result of the query request.
+   */
+  public ListenableFuture<QueryResult> executeAsync(final List<KeyQuery> statements) {
+    return executeAsync(statements, Futures.immediateFuture(TransactionResult.build()));
   }
 
   /**
@@ -341,6 +362,17 @@ public class Datastore implements Closeable {
   }
 
   /**
+   * Execute a multi-keyed query statement in a given transaction.
+   *
+   * @param statements the statements to execute.
+   * @param txn the transaction to execute the query.
+   * @return the result of the query request.
+   */
+  public QueryResult execute(final List<KeyQuery> statements, final TransactionResult txn) throws DatastoreException {
+    return Futures.get(executeAsync(statements, Futures.immediateFuture(txn)), DatastoreException.class);
+  }
+
+  /**
    * Execute a keyed query statement in a given transaction.
    *
    * @param statement the statement to execute.
@@ -348,9 +380,21 @@ public class Datastore implements Closeable {
    * @return the result of the query request.
    */
   public ListenableFuture<QueryResult> executeAsync(final KeyQuery statement, final ListenableFuture<TransactionResult> txn) {
+    return executeAsync(ImmutableList.of(statement), txn);
+  }
+
+  /**
+   * Execute a multi-keyed query statement in a given transaction.
+   *
+   * @param statements the statements to execute.
+   * @param txn the transaction to execute the query.
+   * @return the result of the query request.
+   */
+  public ListenableFuture<QueryResult> executeAsync(final List<KeyQuery> statements, final ListenableFuture<TransactionResult> txn) {
     final ListenableFuture<Response> httpResponse = Futures.transform(txn, (TransactionResult result) -> {
-      final DatastoreV1.Key key = statement.getKey().getPb(config.getNamespace());
-      final DatastoreV1.LookupRequest.Builder request = DatastoreV1.LookupRequest.newBuilder().addKey(key);
+      final List<DatastoreV1.Key> keys = statements
+        .stream().map(s -> s.getKey().getPb(config.getNamespace())).collect(Collectors.toList());
+      final DatastoreV1.LookupRequest.Builder request = DatastoreV1.LookupRequest.newBuilder().addAllKey(keys);
       final ByteString transaction = result.getTransaction();
       if (transaction != null) {
         request.setReadOptions(DatastoreV1.ReadOptions.newBuilder().setTransaction(transaction));
