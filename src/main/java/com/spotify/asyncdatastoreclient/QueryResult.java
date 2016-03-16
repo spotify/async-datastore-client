@@ -30,7 +30,7 @@ import java.util.stream.Collectors;
  *
  * Returned from query operations.
  */
-public class QueryResult implements Result, Iterable<Entity> {
+public final class QueryResult implements Result, Iterable<Entity> {
 
   private final List<Entity> entities;
   private final ByteString cursor;

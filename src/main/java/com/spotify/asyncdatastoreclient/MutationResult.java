@@ -27,7 +27,7 @@ import java.util.stream.Collectors;
  *
  * Returned from all mutation operations.
  */
-public class MutationResult implements Result {
+public final class MutationResult implements Result {
 
   private final DatastoreV1.MutationResult result;
 

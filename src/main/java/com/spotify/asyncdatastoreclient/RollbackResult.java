@@ -23,7 +23,7 @@ import com.google.api.services.datastore.DatastoreV1;
  *
  * Returned from a rollback operation.
  */
-public class RollbackResult implements Result {
+public final class RollbackResult implements Result {
 
   private RollbackResult() {}
 

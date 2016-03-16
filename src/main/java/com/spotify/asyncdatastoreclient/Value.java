@@ -31,7 +31,7 @@ import java.util.stream.Collectors;
  * A value is immutable; use {@code Value.builder()} to construct new
  * {@code Value} instances.
  */
-public class Value {
+public final class Value {
 
   private final DatastoreV1.Value value;
 
@@ -39,7 +39,7 @@ public class Value {
     this.value = value;
   }
 
-  public static class Builder {
+  public static final class Builder {
 
     private final DatastoreV1.Value.Builder value;
 

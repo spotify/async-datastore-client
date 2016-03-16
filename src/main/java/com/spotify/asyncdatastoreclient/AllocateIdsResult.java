@@ -27,7 +27,7 @@ import java.util.stream.Collectors;
  *
  * Returned from a allocate ids operation.
  */
-public class AllocateIdsResult implements Result {
+public final class AllocateIdsResult implements Result {
 
   private final List<Key> keys;
 

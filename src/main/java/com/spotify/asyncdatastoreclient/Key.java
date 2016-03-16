@@ -30,14 +30,14 @@ import java.util.stream.Collectors;
  * A key is immutable; use {@code Key.builder()} to construct new
  * {@code Key} instances.
  */
-public class Key {
+public final class Key {
 
   /**
    * Represents an key path element.
    *
    * A key path element is immutable.
    */
-  public static class Element {
+  public static final class Element {
 
     private final DatastoreV1.Key.PathElement element;
 
@@ -74,7 +74,7 @@ public class Key {
     this.key = key;
   }
 
-  public static class Builder {
+  public static final class Builder {
 
     private final DatastoreV1.Key.Builder key;
 
