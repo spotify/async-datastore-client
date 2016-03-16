@@ -29,6 +29,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Random;
+import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -82,6 +83,32 @@ public class QueryTest extends DatastoreTest {
     assertEquals(1, entities.size());
     assertEquals("Fred Blinge", entities.get(0).getString("fullname"));
     assertEquals(40, entities.get(0).getInteger("age").intValue());
+  }
+
+  @Test
+  public void testMultiKeyQuery() throws Exception {
+    final Insert insert1 = QueryBuilder.insert("employee", 1234567L)
+      .value("fullname", "Fred Blinge")
+      .value("age", 40, false);
+    datastore.execute(insert1);
+    final Insert insert2 = QueryBuilder.insert("employee", 2345678L)
+      .value("fullname", "Jack Spratt")
+      .value("age", 21);
+    datastore.execute(insert2);
+    waitForConsistency();
+
+    final List<KeyQuery> keys = ImmutableList.of(
+      QueryBuilder.query("employee", 1234567L), QueryBuilder.query("employee", 2345678L));
+    final List<Entity> entities = datastore.execute(keys).getAll();
+    assertEquals(2, entities.size());
+    final List<Entity> sorted = entities
+      .stream()
+      .sorted((a, b) -> Long.compare(a.getKey().getId(), b.getKey().getId()))
+      .collect(Collectors.toList());
+    assertEquals("Fred Blinge", sorted.get(0).getString("fullname"));
+    assertEquals(40, sorted.get(0).getInteger("age").intValue());
+    assertEquals("Jack Spratt", sorted.get(1).getString("fullname"));
+    assertEquals(21, sorted.get(1).getInteger("age").intValue());
   }
 
   @Test
