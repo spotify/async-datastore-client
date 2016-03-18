@@ -24,7 +24,7 @@ import com.google.protobuf.ByteString;
  *
  * Returned from a transaction operation.
  */
-public class TransactionResult implements Result {
+public final class TransactionResult implements Result {
 
   private final ByteString transaction;
 

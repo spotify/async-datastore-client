@@ -28,7 +28,7 @@ import static com.google.common.base.MoreObjects.firstNonNull;
  * <p>
  * Defaults are assigned for any options not provided.
  */
-public class DatastoreConfig {
+public final class DatastoreConfig {
 
   private static final Integer DEFAULT_CONNECT_TIMEOUT = 5000;
   private static final Integer DEFAULT_MAX_CONNECTIONS = -1;
@@ -67,7 +67,7 @@ public class DatastoreConfig {
     this.version = firstNonNull(version, DEFAULT_VERSION);
   }
 
-  public static class Builder {
+  public static final class Builder {
     private Integer connectTimeout;
     private Integer maxConnections;
     private Integer requestTimeout;

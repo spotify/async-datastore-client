@@ -51,7 +51,7 @@ import java.util.zip.GZIPInputStream;
  * <p>
  * Call {@code close()} to perform all necessary clean up.
  */
-public class Datastore implements Closeable {
+public final class Datastore implements Closeable {
 
   private static final Logger log = LoggerFactory.getLogger(Datastore.class);
 

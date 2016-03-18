@@ -33,7 +33,7 @@ import java.util.stream.Collectors;
  * All properties are immutable; use {@code Entity.builder()} to construct new
  * {@code Entity} instances.
  */
-public class Entity {
+public final class Entity {
 
   private final DatastoreV1.Entity entity;
   private Map<String, Value> properties;
@@ -43,7 +43,7 @@ public class Entity {
     this.properties = null;
   }
 
-  public static class Builder {
+  public static final class Builder {
 
     private DatastoreV1.Entity.Builder entity;
     private Map<String, Value> properties;
