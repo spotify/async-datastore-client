@@ -112,7 +112,7 @@ public final class Value {
      */
     public Builder value(final List<Object> values) {
       this.value.addAllListValue(values.stream()
-                                     .map(value -> Value.builder(value).build().getPb())
+                                     .map(valueLocal -> Value.builder(valueLocal).build().getPb())
                                      .collect(Collectors.toList()));
       return this;
     }
@@ -292,7 +292,7 @@ public final class Value {
       throw new IllegalArgumentException("Value does not contain a list.");
     }
     return ImmutableList.copyOf(value.getListValueList().stream()
-                                    .map(value -> Value.builder(value).build())
+                                    .map(valueLocal -> Value.builder(valueLocal).build())
                                     .collect(Collectors.toList()));
   }
 
@@ -305,7 +305,7 @@ public final class Value {
    */
   public <T> List<T> getList(final Class<T> clazz) {
     return ImmutableList.copyOf(getList().stream()
-                                    .map(value -> value.convert(clazz))
+                                    .map(valueLocal -> valueLocal.convert(clazz))
                                     .collect(Collectors.toList()));
   }
 
@@ -359,7 +359,7 @@ public final class Value {
 
   @Override
   public boolean equals(final Object obj) {
-    return obj == this || (obj instanceof Value && Objects.equals(value, ((Value) obj).value));
+    return obj.getClass() == this.getClass() || (obj instanceof Value && Objects.equals(value, ((Value) obj).value));
   }
 
   @Override

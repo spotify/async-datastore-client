@@ -110,9 +110,9 @@ public final class Datastore implements Closeable {
     if (credential.getAccessToken() == null || expiresIn != null && expiresIn <= 60) {
       try {
         credential.refreshToken();
-        final String accessToken = credential.getAccessToken();
-        if (accessToken != null) {
-          this.accessToken = accessToken;
+        final String accessTokenLocal = credential.getAccessToken();
+        if (accessTokenLocal != null) {
+          this.accessToken = accessTokenLocal;
         }
       } catch (final IOException e) {
         log.error("Storage exception", Throwables.getRootCause(e));
@@ -120,7 +120,7 @@ public final class Datastore implements Closeable {
     }
   }
 
-  private boolean isSuccessful(final int statusCode) {
+  private static boolean isSuccessful(final int statusCode) {
     return statusCode >= 200 && statusCode < 300;
   }
 
@@ -232,11 +232,11 @@ public final class Datastore implements Closeable {
    */
   public ListenableFuture<RollbackResult> rollbackAsync(final ListenableFuture<TransactionResult> txn) {
     final ListenableFuture<Response> httpResponse = Futures.transform(txn, (TransactionResult result) -> {
-      final DatastoreV1.RollbackRequest.Builder request = DatastoreV1.RollbackRequest.newBuilder();
       final ByteString transaction = result.getTransaction();
       if (transaction == null) {
         throw new DatastoreException("Invalid transaction.");
       }
+      final DatastoreV1.RollbackRequest.Builder request = DatastoreV1.RollbackRequest.newBuilder();
       final ProtoHttpContent payload = new ProtoHttpContent(request.build());
       return ListenableFutureAdapter.asGuavaFuture(prepareRequest("rollback", payload).execute());
     });
