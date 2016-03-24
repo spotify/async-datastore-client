@@ -28,7 +28,10 @@ import java.util.List;
  * Note that it could be convenient to use an 'import static' to use the
  * methods of this class.
  */
-public class QueryBuilder {
+public final class QueryBuilder {
+
+  private QueryBuilder(){
+  }
 
   /**
    * Start building a new INSERT query.

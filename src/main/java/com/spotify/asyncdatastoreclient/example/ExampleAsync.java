@@ -43,7 +43,10 @@ import static com.spotify.asyncdatastoreclient.QueryBuilder.eq;
 /**
  * Some simple asynchronous examples that should help you get started.
  */
-public class ExampleAsync {
+public final class ExampleAsync {
+
+  private ExampleAsync() {
+  }
 
   private static ListenableFuture<MutationResult> addData(final Datastore datastore) {
     final Insert insert = QueryBuilder.insert("employee", 1234567L)
