@@ -387,7 +387,7 @@ public final class Entity {
 
   @Override
   public boolean equals(final Object obj) {
-    return obj == this || (obj instanceof Entity && Objects.equals(entity, ((Entity) obj).entity));
+    return obj.getClass() == this.getClass() || (obj instanceof Entity && Objects.equals(entity, ((Entity) obj).entity));
   }
 
   DatastoreV1.Entity getPb() {
@@ -395,9 +395,7 @@ public final class Entity {
   }
 
   DatastoreV1.Entity getPb(final String namespace) {
-    final DatastoreV1.Entity.Builder prepared = DatastoreV1.Entity.newBuilder(entity)
-        .setKey(getKey().getPb(namespace));
-    final List<DatastoreV1.Property> properties = entity.getPropertyList().stream()
+    final List<DatastoreV1.Property> propertiesLocal = entity.getPropertyList().stream()
         .map(property -> {
           if (property.getValue().hasKeyValue()) {
             return DatastoreV1.Property.newBuilder(property)
@@ -406,6 +404,8 @@ public final class Entity {
           }
           return property;
         }).collect(Collectors.toList());
-    return prepared.clearProperty().addAllProperty(properties).build();
+    final DatastoreV1.Entity.Builder prepared = DatastoreV1.Entity.newBuilder(entity)
+            .setKey(getKey().getPb(namespace));
+    return prepared.clearProperty().addAllProperty(propertiesLocal).build();
   }
 }

@@ -64,7 +64,7 @@ public class QueryTest extends DatastoreTest {
     waitForConsistency();
   }
 
-  private void waitForConsistency() throws Exception {
+  private static void waitForConsistency() throws Exception {
     // Ugly hack to minimise test failures due to inconsistencies.
     // An alternative, if running locally, is to this run `gcd` with `--consistency=1.0`
     Thread.sleep(300);
