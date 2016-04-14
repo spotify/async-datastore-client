@@ -359,7 +359,7 @@ public final class Value {
 
   @Override
   public boolean equals(final Object obj) {
-    return obj.getClass() == this.getClass() || (obj instanceof Value && Objects.equals(value, ((Value) obj).value));
+    return obj.getClass() == this.getClass() && (obj instanceof Value && Objects.equals(value, ((Value) obj).value));
   }
 
   @Override
