@@ -39,7 +39,7 @@ public class Filter {
   private final Operator op;
   private final Value value;
 
-  Filter(final String name, final Operator op, final Value value) {
+  public Filter(final String name, final Operator op, final Value value) {
     this.name = name;
     this.op = op;
     this.value = value;
