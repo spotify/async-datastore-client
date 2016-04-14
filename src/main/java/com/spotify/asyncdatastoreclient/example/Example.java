@@ -40,7 +40,10 @@ import static com.spotify.asyncdatastoreclient.QueryBuilder.eq;
 /**
  * Some simple examples that should help you get started.
  */
-public class Example {
+public final class Example {
+
+  private Example() {
+  }
 
   private static void addData(final Datastore datastore) {
     final Insert insert = QueryBuilder.insert("employee", 1234567L)
