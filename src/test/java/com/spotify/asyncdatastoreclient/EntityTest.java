@@ -95,7 +95,7 @@ public class EntityTest {
     assertTrue(Iterables.elementsEqual(entity5.getList("workdays", String.class), ImmutableList.of(
         "Monday", "Tuesday", "Friday")));
     assertTrue(Iterables.elementsEqual(entity5.getList("workdays"), ImmutableList.of(
-        Value.builder("Monday").build(), Value.builder("Tuesday").build(), Value.builder("Friday").build())));
+        Value.from("Monday").build(), Value.from("Tuesday").build(), Value.from("Friday").build())));
     assertTrue(Iterables.elementsEqual(entity5.getList("overtime_hours", Long.class), ImmutableList.of(2L, 3L, 4L)));
     assertTrue(entity5.contains("picture"));
     assertTrue(entity5.toString().contains("active:true"));
@@ -120,7 +120,7 @@ public class EntityTest {
 
   @Test
   public void testGetEmptyProperty() throws Exception {
-    final Entity entity = Entity.builder().property("bar", Value.fromString("value").build()).build();
+    final Entity entity = Entity.builder().property("bar", Value.from("value").build()).build();
 
     assertEquals(Optional.empty(), entity.get("foo"));
     assertEquals(Optional.of("value"), entity.get("bar").map(Value::getString));
