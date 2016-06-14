@@ -62,7 +62,7 @@ public final class Datastore implements Closeable {
   private final AsyncHttpClient client;
   private final String prefixUri;
 
-  private ScheduledExecutorService executor;
+  private final ScheduledExecutorService executor;
   private volatile String accessToken;
 
   public enum IsolationLevel {

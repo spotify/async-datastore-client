@@ -68,6 +68,8 @@ public class Filter {
       case HAS_ANCESTOR:
         filter.setOperator(DatastoreV1.PropertyFilter.Operator.HAS_ANCESTOR);
         break;
+      default:
+        break;
     }
     return DatastoreV1.Filter.newBuilder().setPropertyFilter(filter).build();
   }

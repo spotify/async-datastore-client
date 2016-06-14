@@ -37,10 +37,10 @@ public final class DatastoreConfig {
   private static final String DEFAULT_HOST = "https://www.googleapis.com";
   private static final String DEFAULT_VERSION = "v1beta2";
 
-  private int connectTimeout;
-  private int maxConnections;
-  private int requestTimeout;
-  private int requestRetry;
+  private final int connectTimeout;
+  private final int maxConnections;
+  private final int requestTimeout;
+  private final int requestRetry;
   private final Credential credential;
   private final String dataset;
   private final String namespace;
