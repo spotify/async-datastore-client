@@ -25,6 +25,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -93,6 +94,18 @@ public final class Entity {
      */
     public Builder key(final Key key) {
       entity.setKey(key.getPb());
+      return this;
+    }
+
+    /**
+     * Set property and its value for this entity.
+     *
+     * @param name the property name to set.
+     * @param value the property value.
+     * @return this entity builder.
+     */
+    public Builder property(final String name, final Value value) {
+      properties.put(name, value);
       return this;
     }
 
@@ -361,6 +374,16 @@ public final class Entity {
               property -> Value.builder(property.getValue()).build())));
     }
     return properties;
+  }
+
+  /**
+   * Get the value for given property, or empty if none exists.
+   *
+   * @param name name of the property to get.
+   * @return an optional containing a property value, or empty.
+   */
+  public Optional<Value> get(final String name) {
+      return Optional.ofNullable(getProperties().get(name));
   }
 
   /**

@@ -43,6 +43,10 @@ public final class Value {
 
     private final DatastoreV1.Value.Builder value;
 
+    private Builder(DatastoreV1.Value.Builder builder) {
+        this.value = builder;
+    }
+
     private Builder() {
       this.value = DatastoreV1.Value.newBuilder();
     }
@@ -72,6 +76,7 @@ public final class Value {
      * @param value the value to set.
      * @return this value builder.
      * @throws IllegalArgumentException if supplied {@code value} is not recognised.
+     * @deprecated Use type-specific builders instead, like {@code Value#fromString(String)}.
      */
     public Builder value(final Object value) {
       if (value instanceof String) {
@@ -139,10 +144,157 @@ public final class Value {
   }
 
   /**
+   * Create a new value containing a string.
+   *
+   * @param value The string to build a value from.
+   * @return A new value builder.
+   */
+  public static Value.Builder from(final String value) {
+    return new Value.Builder(DatastoreV1.Value.newBuilder().setStringValue(value));
+  }
+
+  /**
+   * Create a new value containing a boolean.
+   *
+   * @param value The boolean to build a value from.
+   * @return A new value builder.
+   */
+  public static Value.Builder from(final boolean value) {
+    return new Value.Builder(DatastoreV1.Value.newBuilder().setBooleanValue(value));
+  }
+
+  /**
+   * Create a new value containing a date.
+   *
+   * @param value The date to build a value from.
+   * @return A new value builder.
+   */
+  public static Value.Builder from(final Date value) {
+    return new Value.Builder(
+        DatastoreV1.Value.newBuilder().setTimestampMicrosecondsValue(value.getTime() * 1000L));
+  }
+
+  /**
+   * Create a new value containing a blob.
+   *
+   * @param value The blob to build a value from.
+   * @return A new value builder.
+   */
+  public static Value.Builder from(final ByteString value) {
+    return new Value.Builder(DatastoreV1.Value.newBuilder().setBlobValue(value));
+  }
+
+  /**
+   * Create a new value containing a entity.
+   *
+   * @param entity The entity to build a value from.
+   * @return A new value builder.
+   */
+  public static Value.Builder from(final Entity entity) {
+    return new Value.Builder(DatastoreV1.Value.newBuilder().setEntityValue(entity.getPb()));
+  }
+
+  /**
+   * Create a new value containing a key.
+   *
+   * @param key The key to build a value from.
+   * @return A new value builder.
+   */
+  public static Value.Builder from(final Key key) {
+    return new Value.Builder(DatastoreV1.Value.newBuilder().setKeyValue(key.getPb()));
+  }
+
+  /**
+   * Create a new value containing a double.
+   *
+   * @param value The double to build a value from.
+   * @return A new value builder.
+   */
+  public static Value.Builder from(final double value) {
+    return new Value.Builder(DatastoreV1.Value.newBuilder().setDoubleValue(value));
+  }
+
+  /**
+   * Create a new value containing a float.
+   *
+   * @param value The float to build a value from.
+   * @return A new value builder.
+   */
+  public static Value.Builder from(final float value) {
+    return new Value.Builder(DatastoreV1.Value.newBuilder().setDoubleValue(value));
+  }
+
+  /**
+   * Create a new value containing a integer.
+   *
+   * @param value The integer to build a value from.
+   * @return A new value builder.
+   */
+  public static Value.Builder from(final int value) {
+    return new Value.Builder(DatastoreV1.Value.newBuilder().setIntegerValue(value));
+  }
+
+  /**
+   * Create a new value containing a long.
+   *
+   * @param value The long to build a value from.
+   * @return A new value builder.
+   */
+  public static Value.Builder from(final long value) {
+    return new Value.Builder(DatastoreV1.Value.newBuilder().setIntegerValue(value));
+  }
+
+  /**
+   * Create a new value containing an existing value.
+   *
+   * @param value Values to add to builder.
+   * @return A new value builder containing a list.
+   */
+  public static Value.Builder from(final Value value) {
+    return new Value.Builder(DatastoreV1.Value.newBuilder(value.getPb()));
+  }
+
+  /**
+   * Create a new value containing a list of values.
+   *
+   * @param values List of values to add to builder.
+   * @return A new value builder containing a list.
+   */
+  public static Value.Builder from(final List<Value> values) {
+    final DatastoreV1.Value.Builder builder = DatastoreV1.Value.newBuilder();
+
+    for (final Value v : values) {
+      builder.addListValue(v.getPb());
+    }
+
+    return new Value.Builder(builder);
+  }
+
+  /**
+   * Create a new value containing an array of values.
+   *
+   * @param first First value to add.
+   * @param values Array of values to add to builder.
+   * @return A new value builder containing a list.
+   */
+  public static Value.Builder from(final Value first, final Value... values) {
+    final DatastoreV1.Value.Builder builder = DatastoreV1.Value.newBuilder();
+
+    builder.addListValue(first.getPb());
+
+    for (final Value v : values) {
+      builder.addListValue(v.getPb());
+    }
+
+    return new Value.Builder(builder);
+  }
+
+  /**
    * Creates a new {@code Value} builder based on an existing value.
    *
    * @param value the value to use as a base.
    * @return an value builder.
+   * @deprecated Use {@link #from(Value)}.
    */
   public static Value.Builder builder(final Value value) {
     return new Value.Builder(value);
@@ -153,6 +305,7 @@ public final class Value {
    *
    * @param value the value to set.
    * @return an value builder.
+   * @deprecated Prefer value-specific builders, like {@link #from(String)}.
    */
   public static Value.Builder builder(final Object value) {
     return new Builder().value(value);
@@ -185,6 +338,10 @@ public final class Value {
     return value.getStringValue();
   }
 
+  public boolean isString() {
+    return value.hasStringValue();
+  }
+
   /**
    * Return the value as an integer.
    *
@@ -196,6 +353,15 @@ public final class Value {
       throw new IllegalArgumentException("Value does not contain an integer.");
     }
     return value.getIntegerValue();
+  }
+
+  /**
+   * Check if value is a integer.
+   *
+   * @return {@code true} if value is a integer.
+   */
+  public boolean isInteger() {
+    return value.hasIntegerValue();
   }
 
   /**
@@ -212,6 +378,15 @@ public final class Value {
   }
 
   /**
+   * Check if value is a boolean.
+   *
+   * @return {@code true} if value is a boolean.
+   */
+  public boolean isBoolean() {
+    return value.hasBooleanValue();
+  }
+
+  /**
    * Return the value as a double.
    *
    * @return the value.
@@ -222,6 +397,15 @@ public final class Value {
       throw new IllegalArgumentException("Value does not contain a double.");
     }
     return value.getDoubleValue();
+  }
+
+  /**
+   * Check if value is a double.
+   *
+   * @return {@code true} if value is a double.
+   */
+  public boolean isDouble() {
+    return value.hasDoubleValue();
   }
 
   /**
@@ -237,6 +421,16 @@ public final class Value {
       return new Date(value.getTimestampMicrosecondsValue() / 1000L);
     }
     throw new IllegalArgumentException("Value does not contain a timestamp.");
+  }
+
+  /**
+   * Check if value is a date.
+   *
+   * @return {@code true} if value is a date.
+   */
+  public boolean isDate() {
+    return value.hasTimestampMicrosecondsValue()
+        || value.hasMeaning() && value.getMeaning() == 18 && value.hasIntegerValue();
   }
 
   /**
@@ -256,6 +450,16 @@ public final class Value {
   }
 
   /**
+   * Check if value is a blob.
+   *
+   * @return {@code true} if value is a blob.
+   */
+  public boolean isBlob() {
+    return value.hasBlobValue()
+        || value.hasMeaning() && value.getMeaning() == 18 && value.hasStringValue();
+  }
+
+  /**
    * Return the value as an {@code Entity}.
    *
    * @return the value.
@@ -266,6 +470,15 @@ public final class Value {
       throw new IllegalArgumentException("Value does not contain an entity.");
     }
     return Entity.builder(value.getEntityValue()).build();
+  }
+
+  /**
+   * Check if value is a entity.
+   *
+   * @return {@code true} if value is a entity.
+   */
+  public boolean isEntity() {
+    return value.hasEntityValue();
   }
 
   /**
@@ -282,18 +495,34 @@ public final class Value {
   }
 
   /**
+   * Check if value is a key.
+   *
+   * @return {@code true} if value is a key.
+   */
+  public boolean isKey() {
+    return value.hasKeyValue();
+  }
+
+  /**
    * Return the value as a list of {@code Value}.
    *
-   * @return the value.
-   * @throws IllegalArgumentException if {@code Value} is not a list.
+   * @return the list value, an empty list indicates that the value is not set.
    */
   public List<Value> getList() {
     if (value.getListValueCount() == 0) {
-      throw new IllegalArgumentException("Value does not contain a list.");
+      return ImmutableList.of();
     }
-    return ImmutableList.copyOf(value.getListValueList().stream()
-                                    .map(valueLocal -> Value.builder(valueLocal).build())
-                                    .collect(Collectors.toList()));
+    return ImmutableList.copyOf(value.getListValueList().stream().map(Value::new).iterator());
+  }
+
+  /**
+   * Check if value is a list.
+   * Empty lists are not detected as lists.
+   *
+   * @return {@code true} if value is a list.
+   */
+  public boolean isList() {
+    return value.getListValueCount() > 0;
   }
 
   /**
