@@ -46,7 +46,7 @@ import com.google.common.util.concurrent.ListenableFuture;
 final DatastoreConfig config = DatastoreConfig.builder()
     .requestTimeout(1000)
     .requestRetry(3)
-    .dataset(DATASET_ID);
+    .dataset(DATASET_ID)
     .credential(DatastoreHelper.getServiceAccountCredential(ACCOUNT, KEY_PATH))
     .build();
 
