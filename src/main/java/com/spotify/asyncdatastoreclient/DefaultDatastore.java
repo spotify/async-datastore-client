@@ -28,10 +28,10 @@ import com.ning.http.client.AsyncHttpClient;
 import com.ning.http.client.AsyncHttpClientConfig;
 import com.ning.http.client.Response;
 import com.ning.http.client.extra.ListenableFutureAdapter;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
@@ -42,21 +42,16 @@ import java.util.stream.Collectors;
 import java.util.zip.GZIPInputStream;
 
 /**
- * The Datastore class encapsulates the Cloud Datastore API and handles
- * calling the datastore backend.
- * <p>
  * To create a Datastore object, call the static method {@code Datastore.create()}
  * passing configuration. A scheduled task will begin that automatically refreshes
  * the API access token for you.
- * <p>
- * Call {@code close()} to perform all necessary clean up.
  */
-public final class Datastore implements Closeable {
+public class DefaultDatastore implements DatastoreInterface {
 
-  private static final Logger log = LoggerFactory.getLogger(Datastore.class);
+  private static final Logger log = LoggerFactory.getLogger(DefaultDatastore.class);
 
-  public static final String VERSION = "1.0.0";
-  public static final String USER_AGENT = "Datastore-Java-Client/" + VERSION + " (gzip)";
+  private static final String VERSION = "1.0.0";
+  private static final String USER_AGENT = "Datastore-Java-Client/" + VERSION + " (gzip)";
 
   private final DatastoreConfig config;
   private final AsyncHttpClient client;
@@ -65,12 +60,7 @@ public final class Datastore implements Closeable {
   private final ScheduledExecutorService executor;
   private volatile String accessToken;
 
-  public enum IsolationLevel {
-    SNAPSHOT,
-    SERIALIZABLE
-  }
-
-  private Datastore(final DatastoreConfig config) {
+  private DefaultDatastore(final DatastoreConfig config) {
     this.config = config;
     final AsyncHttpClientConfig httpConfig = new AsyncHttpClientConfig.Builder()
         .setConnectTimeout(config.getConnectTimeout())
@@ -92,8 +82,8 @@ public final class Datastore implements Closeable {
     }
   }
 
-  public static Datastore create(final DatastoreConfig config) {
-    return new Datastore(config);
+  public static DefaultDatastore create(final DatastoreConfig config) {
+    return new DefaultDatastore(config);
   }
 
   @Override
@@ -141,52 +131,22 @@ public final class Datastore implements Closeable {
     return compressed ? new GZIPInputStream(input) : input;
   }
 
-  /**
-   * Start a new transaction.
-   *
-   * The returned {@code TransactionResult} contains the transaction if the
-   * request is successful.
-   *
-   * @return the result of the transaction request.
-   */
+  @Override
   public TransactionResult transaction() throws DatastoreException {
     return Futures.get(transactionAsync(IsolationLevel.SNAPSHOT), DatastoreException.class);
   }
 
-  /**
-   * Start a new transaction with a given isolation level.
-   *
-   * The returned {@code TransactionResult} contains the transaction if the
-   * request is successful.
-   *
-   * @param isolationLevel the transaction isolation level to request.
-   * @return the result of the transaction request.
-   */
+  @Override
   public TransactionResult transaction(final IsolationLevel isolationLevel) throws DatastoreException {
     return Futures.get(transactionAsync(isolationLevel), DatastoreException.class);
   }
 
-  /**
-   * Start a new transaction.
-   *
-   * The returned {@code TransactionResult} contains the transaction if the
-   * request is successful.
-   *
-   * @return the result of the transaction request.
-   */
+  @Override
   public ListenableFuture<TransactionResult> transactionAsync() {
     return transactionAsync(IsolationLevel.SNAPSHOT);
   }
 
-  /**
-   * Start a new transaction.
-   *
-   * The returned {@code TransactionResult} contains the transaction if the
-   * request is successful.
-   *
-   * @param isolationLevel the transaction isolation level to request.
-   * @return the result of the transaction request.
-   */
+  @Override
   public ListenableFuture<TransactionResult> transactionAsync(final IsolationLevel isolationLevel) {
     final ListenableFuture<Response> httpResponse;
     try {
@@ -210,26 +170,12 @@ public final class Datastore implements Closeable {
     });
   }
 
-  /**
-   * Rollback a given transaction.
-   *
-   * You normally rollback a transaction in the event of d Datastore failure.
-   *
-   * @param txn the transaction.
-   * @return the result of the rollback request.
-   */
+  @Override
   public RollbackResult rollback(final TransactionResult txn) throws DatastoreException {
     return Futures.get(rollbackAsync(Futures.immediateFuture(txn)), DatastoreException.class);
   }
 
-  /**
-   * Rollback a given transaction.
-   *
-   * You normally rollback a transaction in the event of d Datastore failure.
-   *
-   * @param txn the transaction.
-   * @return the result of the rollback request.
-   */
+  @Override
   public ListenableFuture<RollbackResult> rollbackAsync(final ListenableFuture<TransactionResult> txn) {
     final ListenableFuture<Response> httpResponse = Futures.transform(txn, (TransactionResult result) -> {
       final ByteString transaction = result.getTransaction();
@@ -249,48 +195,22 @@ public final class Datastore implements Closeable {
     });
   }
 
-  /**
-   * Commit a given transaction.
-   *
-   * You normally manually commit a transaction after performing read-only
-   * operations without mutations.
-   *
-   * @param txn the transaction.
-   * @return the result of the commit request.
-   */
+  @Override
   public MutationResult commit(final TransactionResult txn) throws DatastoreException {
     return Futures.get(executeAsync((MutationStatement) null, Futures.immediateFuture(txn)), DatastoreException.class);
   }
 
-  /**
-   * Commit a given transaction.
-   *
-   * You normally manually commit a transaction after performing read-only
-   * operations without mutations.
-   *
-   * @param txn the transaction.
-   * @return the result of the commit request.
-   */
+  @Override
   public ListenableFuture<MutationResult> commitAsync(final ListenableFuture<TransactionResult> txn) {
     return executeAsync((MutationStatement) null, txn);
   }
 
-  /**
-   * Execute a allocate ids statement.
-   *
-   * @param statement the statement to execute.
-   * @return the result of the allocate ids request.
-   */
+  @Override
   public AllocateIdsResult execute(final AllocateIds statement) throws DatastoreException {
     return Futures.get(executeAsync(statement), DatastoreException.class);
   }
 
-  /**
-   * Execute a allocate ids statement.
-   *
-   * @param statement the statement to execute.
-   * @return the result of the allocate ids request.
-   */
+  @Override
   public ListenableFuture<AllocateIdsResult> executeAsync(final AllocateIds statement) {
     final ListenableFuture<Response> httpResponse;
     try {
@@ -310,86 +230,42 @@ public final class Datastore implements Closeable {
     });
   }
 
-  /**
-   * Execute a keyed query statement.
-   *
-   * @param statement the statement to execute.
-   * @return the result of the query request.
-   */
+  @Override
   public QueryResult execute(final KeyQuery statement) throws DatastoreException {
     return Futures.get(executeAsync(statement), DatastoreException.class);
   }
 
-  /**
-   * Execute a multi-keyed query statement.
-   *
-   * @param statements the statements to execute.
-   * @return the result of the query request.
-   */
+  @Override
   public QueryResult execute(final List<KeyQuery> statements) throws DatastoreException {
     return Futures.get(executeAsync(statements), DatastoreException.class);
   }
 
-  /**
-   * Execute a keyed query statement.
-   *
-   * @param statement the statement to execute.
-   * @return the result of the query request.
-   */
+  @Override
   public ListenableFuture<QueryResult> executeAsync(final KeyQuery statement) {
     return executeAsync(statement, Futures.immediateFuture(TransactionResult.build()));
   }
 
-  /**
-   * Execute a multi-keyed query statement.
-   *
-   * @param statements the statements to execute.
-   * @return the result of the query request.
-   */
+  @Override
   public ListenableFuture<QueryResult> executeAsync(final List<KeyQuery> statements) {
     return executeAsync(statements, Futures.immediateFuture(TransactionResult.build()));
   }
 
-  /**
-   * Execute a keyed query statement in a given transaction.
-   *
-   * @param statement the statement to execute.
-   * @param txn the transaction to execute the query.
-   * @return the result of the query request.
-   */
+  @Override
   public QueryResult execute(final KeyQuery statement, final TransactionResult txn) throws DatastoreException {
     return Futures.get(executeAsync(statement, Futures.immediateFuture(txn)), DatastoreException.class);
   }
 
-  /**
-   * Execute a multi-keyed query statement in a given transaction.
-   *
-   * @param statements the statements to execute.
-   * @param txn the transaction to execute the query.
-   * @return the result of the query request.
-   */
+  @Override
   public QueryResult execute(final List<KeyQuery> statements, final TransactionResult txn) throws DatastoreException {
     return Futures.get(executeAsync(statements, Futures.immediateFuture(txn)), DatastoreException.class);
   }
 
-  /**
-   * Execute a keyed query statement in a given transaction.
-   *
-   * @param statement the statement to execute.
-   * @param txn the transaction to execute the query.
-   * @return the result of the query request.
-   */
+  @Override
   public ListenableFuture<QueryResult> executeAsync(final KeyQuery statement, final ListenableFuture<TransactionResult> txn) {
     return executeAsync(ImmutableList.of(statement), txn);
   }
 
-  /**
-   * Execute a multi-keyed query statement in a given transaction.
-   *
-   * @param statements the statements to execute.
-   * @param txn the transaction to execute the query.
-   * @return the result of the query request.
-   */
+  @Override
   public ListenableFuture<QueryResult> executeAsync(final List<KeyQuery> statements, final ListenableFuture<TransactionResult> txn) {
     final ListenableFuture<Response> httpResponse = Futures.transform(txn, (TransactionResult result) -> {
       final List<DatastoreV1.Key> keys = statements
@@ -411,44 +287,22 @@ public final class Datastore implements Closeable {
     });
   }
 
-  /**
-   * Execute a mutation query statement.
-   *
-   * @param statement the statement to execute.
-   * @return the result of the mutation request.
-   */
+  @Override
   public MutationResult execute(final MutationStatement statement) throws DatastoreException {
     return Futures.get(executeAsync(statement), DatastoreException.class);
   }
 
-  /**
-   * Execute a mutation query statement.
-   *
-   * @param statement the statement to execute.
-   * @return the result of the mutation request.
-   */
+  @Override
   public ListenableFuture<MutationResult> executeAsync(final MutationStatement statement) {
     return executeAsync(statement, Futures.immediateFuture(TransactionResult.build()));
   }
 
-  /**
-   * Execute a mutation query statement in a given transaction.
-   *
-   * @param statement the statement to execute.
-   * @param txn the transaction to execute the query.
-   * @return the result of the mutation request.
-   */
+  @Override
   public MutationResult execute(final MutationStatement statement, final TransactionResult txn) throws DatastoreException {
     return Futures.get(executeAsync(statement, Futures.immediateFuture(txn)), DatastoreException.class);
   }
 
-  /**
-   * Execute a mutation query statement in a given transaction.
-   *
-   * @param statement the statement to execute.
-   * @param txn the transaction to execute the query.
-   * @return the result of the mutation request.
-   */
+  @Override
   public ListenableFuture<MutationResult> executeAsync(final MutationStatement statement, final ListenableFuture<TransactionResult> txn) {
     final ListenableFuture<Response> httpResponse = Futures.transform(txn, (TransactionResult result) -> {
       final DatastoreV1.CommitRequest.Builder request = DatastoreV1.CommitRequest.newBuilder();
@@ -473,44 +327,22 @@ public final class Datastore implements Closeable {
     });
   }
 
-  /**
-   * Execute a query statement.
-   *
-   * @param statement the statement to execute.
-   * @return the result of the query request.
-   */
+  @Override
   public QueryResult execute(final Query statement) throws DatastoreException {
     return Futures.get(executeAsync(statement), DatastoreException.class);
   }
 
-  /**
-   * Execute a query statement.
-   *
-   * @param statement the statement to execute.
-   * @return the result of the query request.
-   */
+  @Override
   public ListenableFuture<QueryResult> executeAsync(final Query statement) {
     return executeAsync(statement, Futures.immediateFuture(TransactionResult.build()));
   }
 
-  /**
-   * Execute a query statement in a given transaction.
-   *
-   * @param statement the statement to execute.
-   * @param txn the transaction to execute the query.
-   * @return the result of the query request.
-   */
+  @Override
   public QueryResult execute(final Query statement, final TransactionResult txn) throws DatastoreException {
     return Futures.get(executeAsync(statement, Futures.immediateFuture(txn)), DatastoreException.class);
   }
 
-  /**
-   * Execute a query statement in a given transaction.
-   *
-   * @param statement the statement to execute.
-   * @param txn the transaction to execute the query.
-   * @return the result of the query request.
-   */
+  @Override
   public ListenableFuture<QueryResult> executeAsync(final Query statement, final ListenableFuture<TransactionResult> txn) {
     final ListenableFuture<Response> httpResponse = Futures.transform(txn, (TransactionResult result) -> {
       final DatastoreV1.RunQueryRequest.Builder request = DatastoreV1.RunQueryRequest.newBuilder()

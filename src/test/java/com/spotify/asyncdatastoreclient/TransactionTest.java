@@ -54,7 +54,7 @@ public class TransactionTest extends DatastoreTest {
 
   @Test
   public void testInsertWithSerializable() throws Exception {
-    final TransactionResult txn = datastore.transaction(Datastore.IsolationLevel.SERIALIZABLE);
+    final TransactionResult txn = datastore.transaction(DefaultDatastore.IsolationLevel.SERIALIZABLE);
 
     final Insert insert = QueryBuilder.insert("employee")
         .value("fullname", "Fred Blinge")

@@ -23,7 +23,7 @@ import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 
 import com.spotify.asyncdatastoreclient.Batch;
-import com.spotify.asyncdatastoreclient.Datastore;
+import com.spotify.asyncdatastoreclient.DefaultDatastore;
 import com.spotify.asyncdatastoreclient.DatastoreConfig;
 import com.spotify.asyncdatastoreclient.Entity;
 import com.spotify.asyncdatastoreclient.Insert;
@@ -48,7 +48,7 @@ public final class ExampleAsync {
   private ExampleAsync() {
   }
 
-  private static ListenableFuture<MutationResult> addData(final Datastore datastore) {
+  private static ListenableFuture<MutationResult> addData(final DefaultDatastore datastore) {
     final Insert insert = QueryBuilder.insert("employee", 1234567L)
         .value("fullname", "Fred Blinge")
         .value("inserted", new Date())
@@ -56,7 +56,7 @@ public final class ExampleAsync {
     return datastore.executeAsync(insert);
   }
 
-  private static ListenableFuture<MutationResult> addDataInTransaction(final Datastore datastore) {
+  private static ListenableFuture<MutationResult> addDataInTransaction(final DefaultDatastore datastore) {
     final ListenableFuture<TransactionResult> txn = datastore.transactionAsync();
 
     final KeyQuery get = QueryBuilder.query("employee", 2345678L);
@@ -75,7 +75,7 @@ public final class ExampleAsync {
     });
   }
 
-  private static ListenableFuture<QueryResult> queryData(final Datastore datastore) {
+  private static ListenableFuture<QueryResult> queryData(final DefaultDatastore datastore) {
     final Query get = QueryBuilder.query()
         .kindOf("employee")
         .filterBy(eq("age", 40))
@@ -83,7 +83,7 @@ public final class ExampleAsync {
     return datastore.executeAsync(get);
   }
 
-  private static ListenableFuture<MutationResult> deleteData(final Datastore datastore) {
+  private static ListenableFuture<MutationResult> deleteData(final DefaultDatastore datastore) {
     final Batch delete = QueryBuilder.batch()
         .add(QueryBuilder.delete("employee", 1234567L))
         .add(QueryBuilder.delete("employee", 2345678L));
@@ -101,7 +101,7 @@ public final class ExampleAsync {
         .credential(DatastoreHelper.getComputeEngineCredential())
         .build();
 
-    final Datastore datastore = Datastore.create(config);
+    final DefaultDatastore datastore = DefaultDatastore.create(config);
 
     // Add a two entities asynchronously
     final ListenableFuture<MutationResult> addFirst = addData(datastore);

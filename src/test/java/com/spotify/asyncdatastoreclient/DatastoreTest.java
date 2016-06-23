@@ -32,11 +32,11 @@ public abstract class DatastoreTest {
   public static final String ACCOUNT = System.getProperty("account");
   public static final String KEY_PATH = System.getProperty("keypath");
 
-  protected static Datastore datastore;
+  protected static DefaultDatastore datastore;
 
   @Before
   public void before() throws Exception {
-    datastore = Datastore.create(datastoreConfig());
+    datastore = DefaultDatastore.create(datastoreConfig());
     resetDatastore();
   }
 

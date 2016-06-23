@@ -21,7 +21,7 @@ import com.google.api.services.datastore.client.DatastoreHelper;
 import com.google.common.base.Throwables;
 
 import com.spotify.asyncdatastoreclient.Batch;
-import com.spotify.asyncdatastoreclient.Datastore;
+import com.spotify.asyncdatastoreclient.DefaultDatastore;
 import com.spotify.asyncdatastoreclient.DatastoreConfig;
 import com.spotify.asyncdatastoreclient.DatastoreException;
 import com.spotify.asyncdatastoreclient.Entity;
@@ -45,7 +45,7 @@ public final class Example {
   private Example() {
   }
 
-  private static void addData(final Datastore datastore) {
+  private static void addData(final DefaultDatastore datastore) {
     final Insert insert = QueryBuilder.insert("employee", 1234567L)
         .value("fullname", "Fred Blinge")
         .value("inserted", new Date())
@@ -57,7 +57,7 @@ public final class Example {
     }
   }
 
-  private static void addDataInTransaction(final Datastore datastore) {
+  private static void addDataInTransaction(final DefaultDatastore datastore) {
     try {
       final TransactionResult txn = datastore.transaction();
 
@@ -80,7 +80,7 @@ public final class Example {
     }
   }
 
-  private static void queryData(final Datastore datastore) {
+  private static void queryData(final DefaultDatastore datastore) {
     final Query get = QueryBuilder.query()
         .kindOf("employee")
         .filterBy(eq("age", 40))
@@ -99,7 +99,7 @@ public final class Example {
     }
   }
 
-  private static void deleteData(final Datastore datastore) {
+  private static void deleteData(final DefaultDatastore datastore) {
     final Batch delete = QueryBuilder.batch()
         .add(QueryBuilder.delete("employee", 1234567L))
         .add(QueryBuilder.delete("employee", 2345678L));
@@ -121,7 +121,7 @@ public final class Example {
         .credential(DatastoreHelper.getComputeEngineCredential())
         .build();
 
-    final Datastore datastore = Datastore.create(config);
+    final DefaultDatastore datastore = DefaultDatastore.create(config);
 
     // Add a single entity
     addData(datastore);
