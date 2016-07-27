@@ -100,7 +100,7 @@ public final class Value {
       } else if (value instanceof Integer) {
         this.value.setIntegerValue(((Integer) value).longValue());
       } else {
-        throw new IllegalArgumentException("Invalid value type.");
+        throw new IllegalArgumentException("Invalid value type: " + value.getClass());
       }
       return this;
     }
