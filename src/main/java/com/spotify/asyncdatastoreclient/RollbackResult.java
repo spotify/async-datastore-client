@@ -16,8 +16,6 @@
 
 package com.spotify.asyncdatastoreclient;
 
-import com.google.api.services.datastore.DatastoreV1;
-
 /**
  * A rollback result.
  *
@@ -27,7 +25,7 @@ public final class RollbackResult implements Result {
 
   private RollbackResult() {}
 
-  static RollbackResult build(final DatastoreV1.RollbackResponse response) {
+  static RollbackResult build(final com.google.datastore.v1.RollbackResponse response) {
     return new RollbackResult();
   }
 

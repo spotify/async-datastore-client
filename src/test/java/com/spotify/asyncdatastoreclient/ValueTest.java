@@ -132,7 +132,7 @@ public class ValueTest {
     final Value value2 = Value.from("test").build();
     assertEquals(value1.hashCode(), value2.hashCode());
 
-    final Value value3 = Value.from("test").build();
+    final Value value3 = Value.from("test").indexed(false).build();
     final Value value4 = Value.from("test").indexed(true).build();
     assertNotEquals(value3.hashCode(), value4.hashCode());
   }

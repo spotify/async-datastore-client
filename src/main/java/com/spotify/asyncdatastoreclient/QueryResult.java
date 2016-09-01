@@ -16,7 +16,6 @@
 
 package com.spotify.asyncdatastoreclient;
 
-import com.google.api.services.datastore.DatastoreV1;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.protobuf.ByteString;
@@ -45,20 +44,20 @@ public final class QueryResult implements Result, Iterable<Entity> {
     this.cursor = cursor;
   }
 
-  static QueryResult build(final DatastoreV1.LookupResponse response) {
+  static QueryResult build(final com.google.datastore.v1.LookupResponse response) {
     return new QueryResult(ImmutableList.copyOf(
         response.getFoundList().stream()
             .map(entity -> Entity.builder(entity.getEntity()).build())
             .collect(Collectors.toList())));
   }
 
-  static QueryResult build(final DatastoreV1.RunQueryResponse response) {
-    final DatastoreV1.QueryResultBatch batch = response.getBatch();
+  static QueryResult build(final com.google.datastore.v1.RunQueryResponse response) {
+    final com.google.datastore.v1.QueryResultBatch batch = response.getBatch();
     return new QueryResult(ImmutableList.copyOf(
-        batch.getEntityResultList().stream()
+        response.getBatch().getEntityResultsList().stream()
             .map(entity -> Entity.builder(entity.getEntity()).build())
             .collect(Collectors.toList())),
-                           batch.hasEndCursor() ? batch.getEndCursor() : null);
+        batch.getEndCursor());
   }
 
   /**

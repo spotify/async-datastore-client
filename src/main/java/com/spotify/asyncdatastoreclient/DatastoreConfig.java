@@ -17,6 +17,9 @@
 package com.spotify.asyncdatastoreclient;
 
 import com.google.api.client.auth.oauth2.Credential;
+import com.google.common.collect.ImmutableList;
+
+import java.util.List;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 
@@ -24,25 +27,28 @@ import static com.google.common.base.MoreObjects.firstNonNull;
  * Datastore configuration class used to initialise {@code Datastore}.
  * <p>
  * Use {@code DatastoreConfig.builder()} build a config object by supplying
- * options such as {@code connectTimeout()} and {@code dataset()}.
+ * options such as {@code connectTimeout()} and {@code project()}.
  * <p>
  * Defaults are assigned for any options not provided.
  */
 public final class DatastoreConfig {
 
+  public static final List<String> SCOPES = ImmutableList.of(
+    "https://www.googleapis.com/auth/datastore");
+
   private static final Integer DEFAULT_CONNECT_TIMEOUT = 5000;
   private static final Integer DEFAULT_MAX_CONNECTIONS = -1;
   private static final Integer DEFAULT_REQUEST_TIMEOUTS = 5000;
   private static final Integer DEFAULT_REQUEST_RETRIES = 5;
-  private static final String DEFAULT_HOST = "https://www.googleapis.com";
-  private static final String DEFAULT_VERSION = "v1beta2";
+  private static final String DEFAULT_HOST = "https://datastore.googleapis.com";
+  private static final String DEFAULT_VERSION = "v1";
 
   private final int connectTimeout;
   private final int maxConnections;
   private final int requestTimeout;
   private final int requestRetry;
   private final Credential credential;
-  private final String dataset;
+  private final String project;
   private final String namespace;
   private final String host;
   private final String version;
@@ -52,7 +58,7 @@ public final class DatastoreConfig {
                           final Integer requestTimeout,
                           final Integer requestRetry,
                           final Credential credential,
-                          final String dataset,
+                          final String project,
                           final String namespace,
                           final String host,
                           final String version) {
@@ -61,7 +67,7 @@ public final class DatastoreConfig {
     this.requestTimeout = firstNonNull(requestTimeout, DEFAULT_REQUEST_TIMEOUTS);
     this.requestRetry = firstNonNull(requestRetry, DEFAULT_REQUEST_RETRIES);
     this.credential = credential;
-    this.dataset = dataset;
+    this.project = project;
     this.namespace = namespace;
     this.host = firstNonNull(host, DEFAULT_HOST);
     this.version = firstNonNull(version, DEFAULT_VERSION);
@@ -73,7 +79,7 @@ public final class DatastoreConfig {
     private Integer requestTimeout;
     private Integer requestRetry;
     private Credential credential;
-    private String dataset;
+    private String project;
     private String namespace;
     private String host;
     private String version;
@@ -91,7 +97,7 @@ public final class DatastoreConfig {
                                  requestTimeout,
                                  requestRetry,
                                  credential,
-                                 dataset,
+                                 project,
                                  namespace,
                                  host,
                                  version);
@@ -160,19 +166,19 @@ public final class DatastoreConfig {
     }
 
     /**
-     * Set dataset id to use when querying Datastore.
+     * Set project id to use when querying Datastore.
      *
-     * @param dataset the dataset id.
+     * @param project the project id.
      * @return this config builder.
      */
-    public Builder dataset(final String dataset) {
-      this.dataset = dataset;
+    public Builder project(final String project) {
+      this.project = project;
       return this;
     }
 
     /**
      * An optional namespace may be specified to further partition data in
-     * your dataset.
+     * your project.
      *
      * @param namespace the namespace.
      * @return this config builder.
@@ -230,8 +236,8 @@ public final class DatastoreConfig {
     return credential;
   }
 
-  public String getDataset() {
-    return dataset;
+  public String getProject() {
+    return project;
   }
 
   public String getNamespace() {

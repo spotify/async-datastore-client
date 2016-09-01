@@ -16,7 +16,7 @@
 
 package com.spotify.asyncdatastoreclient;
 
-import com.google.api.services.datastore.DatastoreV1;
+import com.google.datastore.v1.Mutation;
 
 /**
  * A mutation statement.
@@ -25,6 +25,6 @@ import com.google.api.services.datastore.DatastoreV1;
  */
 public interface MutationStatement extends Statement {
 
-  DatastoreV1.Mutation getPb(String namespace);
+  Mutation getPb(final String namespace);
 
 }

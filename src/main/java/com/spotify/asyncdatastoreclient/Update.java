@@ -16,7 +16,7 @@
 
 package com.spotify.asyncdatastoreclient;
 
-import com.google.api.services.datastore.DatastoreV1;
+import com.google.datastore.v1.Mutation;
 
 import java.util.List;
 
@@ -104,12 +104,13 @@ public class Update extends KeyedStatement implements MutationStatement {
   }
 
   @Override
-  public DatastoreV1.Mutation getPb(final String namespace) {
-    final DatastoreV1.Mutation.Builder mutation = DatastoreV1.Mutation.newBuilder();
+  public Mutation getPb(final String namespace) {
+    final com.google.datastore.v1.Mutation.Builder mutation =
+      com.google.datastore.v1.Mutation.newBuilder();
     if (upsert) {
-      mutation.addUpsert(entity.build().getPb(namespace));
+      mutation.setUpsert(entity.build().getPb(namespace));
     } else {
-      mutation.addUpdate(entity.build().getPb(namespace));
+      mutation.setUpdate(entity.build().getPb(namespace));
     }
     return mutation.build();
   }

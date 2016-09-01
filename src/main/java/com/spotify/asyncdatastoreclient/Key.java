@@ -16,7 +16,6 @@
 
 package com.spotify.asyncdatastoreclient;
 
-import com.google.api.services.datastore.DatastoreV1;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 
@@ -39,25 +38,25 @@ public final class Key {
    */
   public static final class Element {
 
-    private final DatastoreV1.Key.PathElement element;
+    private final com.google.datastore.v1.Key.PathElement element;
 
-    private Element(final DatastoreV1.Key.PathElement element) {
+    private Element(final com.google.datastore.v1.Key.PathElement element) {
       this.element = element;
     }
 
     public String getKind() {
-      return element.hasKind() ? element.getKind() : null;
+      return element.getKind();
     }
 
     public Long getId() {
-      return element.hasId() ? element.getId() : null;
+      return isId(element) ? element.getId() : null;
     }
 
     public String getName() {
-      return element.hasName() ? element.getName() : null;
+      return isName(element) ? element.getName() : null;
     }
 
-    DatastoreV1.Key.PathElement getPb() {
+    com.google.datastore.v1.Key.PathElement getPb() {
       return element;
     }
 
@@ -68,26 +67,26 @@ public final class Key {
     }
   }
 
-  private final DatastoreV1.Key key;
+  private final com.google.datastore.v1.Key key;
 
-  private Key(final DatastoreV1.Key key) {
+  private Key(final com.google.datastore.v1.Key key) {
     this.key = key;
   }
 
   public static final class Builder {
 
-    private final DatastoreV1.Key.Builder key;
+    private final com.google.datastore.v1.Key.Builder key;
 
     private Builder() {
-      this.key = DatastoreV1.Key.newBuilder();
+      this.key = com.google.datastore.v1.Key.newBuilder();
     }
 
     private Builder(final Key key) {
       this(key.getPb());
     }
 
-    private Builder(final DatastoreV1.Key key) {
-      this.key = DatastoreV1.Key.newBuilder(key);
+    private Builder(final com.google.datastore.v1.Key key) {
+      this.key = com.google.datastore.v1.Key.newBuilder(key);
     }
 
     /**
@@ -106,7 +105,8 @@ public final class Key {
      * @return this key builder.
      */
     public Builder namespace(final String namespace) {
-      key.setPartitionId(DatastoreV1.PartitionId.newBuilder().setNamespace(namespace));
+      key.setPartitionId(
+          com.google.datastore.v1.PartitionId.newBuilder().setNamespaceId(namespace));
       return this;
     }
 
@@ -117,7 +117,7 @@ public final class Key {
      * @return this key builder.
      */
     public Builder path(final Element element) {
-      key.addPathElement(element.getPb());
+      key.addPath(element.getPb());
       return this;
     }
 
@@ -128,7 +128,7 @@ public final class Key {
      * @return this key builder.
      */
     public Builder path(final String kind) {
-      key.addPathElement(DatastoreV1.Key.PathElement.newBuilder().setKind(kind));
+      key.addPath(com.google.datastore.v1.Key.PathElement.newBuilder().setKind(kind));
       return this;
     }
 
@@ -140,7 +140,7 @@ public final class Key {
      * @return this key builder.
      */
     public Builder path(final String kind, final long id) {
-      key.addPathElement(DatastoreV1.Key.PathElement.newBuilder().setKind(kind).setId(id));
+      key.addPath(com.google.datastore.v1.Key.PathElement.newBuilder().setKind(kind).setId(id));
       return this;
     }
 
@@ -152,7 +152,7 @@ public final class Key {
      * @return this key builder.
      */
     public Builder path(final String kind, final String name) {
-      key.addPathElement(DatastoreV1.Key.PathElement.newBuilder().setKind(kind).setName(name));
+      key.addPath(com.google.datastore.v1.Key.PathElement.newBuilder().setKind(kind).setName(name));
       return this;
     }
 
@@ -274,7 +274,7 @@ public final class Key {
     return new Key.Builder(key);
   }
 
-  static Key.Builder builder(final DatastoreV1.Key key) {
+  static Key.Builder builder(final com.google.datastore.v1.Key key) {
     return new Key.Builder(key);
   }
 
@@ -284,7 +284,7 @@ public final class Key {
    * @return the namespace.
    */
   public String getNamespace() {
-    return key.hasPartitionId() && key.getPartitionId().hasNamespace() ? key.getPartitionId().getNamespace() : null;
+    return key.getPartitionId().getNamespaceId();
   }
 
   /**
@@ -295,15 +295,11 @@ public final class Key {
    * @return true if the key is complete.
    */
   public boolean isComplete() {
-    if (key.getPathElementCount() == 0) {
+    if (key.getPathCount() == 0) {
       return false;
     }
-    for (final DatastoreV1.Key.PathElement element : key.getPathElementList()) {
-      if (!element.hasId() && !element.hasName()) {
-        return false;
-      }
-    }
-    return true;
+
+    return key.getPathList().stream().allMatch(e -> isId(e) || isName(e));
   }
 
   /**
@@ -314,11 +310,11 @@ public final class Key {
    * @return the element kind.
    */
   public String getKind() {
-    final DatastoreV1.Key.PathElement element = Iterables.getLast(key.getPathElementList(), null);
+    final com.google.datastore.v1.Key.PathElement element = Iterables.getLast(key.getPathList(), null);
     if (element == null) {
       return null;
     }
-    return element.hasKind() ? element.getKind() : null;
+    return element.getKind();
   }
 
   /**
@@ -329,11 +325,11 @@ public final class Key {
    * @return the key id.
    */
   public Long getId() {
-    final DatastoreV1.Key.PathElement element = Iterables.getLast(key.getPathElementList(), null);
+    final com.google.datastore.v1.Key.PathElement element = Iterables.getLast(key.getPathList(), null);
     if (element == null) {
       return null;
     }
-    return element.hasId() ? element.getId() : null;
+    return isId(element) ? element.getId() : null;
   }
 
   /**
@@ -344,11 +340,11 @@ public final class Key {
    * @return the key name.
    */
   public String getName() {
-    final DatastoreV1.Key.PathElement element = Iterables.getLast(key.getPathElementList(), null);
+    final com.google.datastore.v1.Key.PathElement element = Iterables.getLast(key.getPathList(), null);
     if (element == null) {
       return null;
     }
-    return element.hasName() ? element.getName() : null;
+    return isName(element) ? element.getName() : null;
   }
 
   /**
@@ -357,7 +353,7 @@ public final class Key {
    * @return a list of path elements that make up this key.
    */
   public List<Element> getPath() {
-    return ImmutableList.copyOf(key.getPathElementList().stream()
+    return ImmutableList.copyOf(key.getPathList().stream()
                                     .map(Element::new)
                                     .collect(Collectors.toList()));
   }
@@ -379,16 +375,27 @@ public final class Key {
     return obj == this || (obj instanceof Key && Objects.equals(key, ((Key) obj).key));
   }
 
-  DatastoreV1.Key getPb() {
+  com.google.datastore.v1.Key getPb() {
     return key;
   }
 
-  DatastoreV1.Key getPb(final String namespace) {
+  com.google.datastore.v1.Key getPb(final String namespace) {
     if (namespace == null) {
       return key;
     } else {
-      return DatastoreV1.Key.newBuilder(key)
-              .setPartitionId(DatastoreV1.PartitionId.newBuilder().setNamespace(namespace)).build();
+      return com.google.datastore.v1.Key
+          .newBuilder(key)
+          .setPartitionId(
+              com.google.datastore.v1.PartitionId
+                  .newBuilder().setNamespaceId(namespace)).build();
     }
+  }
+
+  private static boolean isId(final com.google.datastore.v1.Key.PathElement element) {
+    return element.getIdTypeCase() == com.google.datastore.v1.Key.PathElement.IdTypeCase.ID;
+  }
+
+  private static boolean isName(final com.google.datastore.v1.Key.PathElement element) {
+    return element.getIdTypeCase() == com.google.datastore.v1.Key.PathElement.IdTypeCase.NAME;
   }
 }

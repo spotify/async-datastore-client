@@ -16,7 +16,7 @@
 
 package com.spotify.asyncdatastoreclient;
 
-import com.google.api.services.datastore.DatastoreV1;
+import com.google.datastore.v1.Mutation;
 
 /**
  * A delete statement.
@@ -30,8 +30,8 @@ public class Delete extends KeyedStatement implements MutationStatement {
   }
 
   @Override
-  public DatastoreV1.Mutation getPb(final String namespace) {
-    final DatastoreV1.Key mutationKey = getKey().getPb(namespace);
-    return DatastoreV1.Mutation.newBuilder().addDelete(mutationKey).build();
+  public Mutation getPb(final String namespace) {
+    final com.google.datastore.v1.Key mutationKey = getKey().getPb(namespace);
+    return com.google.datastore.v1.Mutation.newBuilder().setDelete(mutationKey).build();
   }
 }

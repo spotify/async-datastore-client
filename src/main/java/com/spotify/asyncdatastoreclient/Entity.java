@@ -16,9 +16,7 @@
 
 package com.spotify.asyncdatastoreclient;
 
-import com.google.api.client.util.Maps;
-import com.google.api.services.datastore.DatastoreV1;
-import com.google.common.collect.ImmutableSortedMap;
+import com.google.common.collect.Maps;
 import com.google.protobuf.ByteString;
 
 import java.util.Date;
@@ -36,26 +34,26 @@ import java.util.stream.Collectors;
  */
 public final class Entity {
 
-  private final DatastoreV1.Entity entity;
+  private final com.google.datastore.v1.Entity entity;
   private Map<String, Value> properties;
 
-  private Entity(final DatastoreV1.Entity entity) {
+  private Entity(final com.google.datastore.v1.Entity entity) {
     this.entity = entity;
     this.properties = null;
   }
 
   public static final class Builder {
 
-    private DatastoreV1.Entity.Builder entity;
+    private com.google.datastore.v1.Entity.Builder entity;
     private Map<String, Value> properties;
 
     private Builder() {
-      this.entity = DatastoreV1.Entity.newBuilder();
+      this.entity = com.google.datastore.v1.Entity.newBuilder();
       this.properties = Maps.newHashMap();
     }
 
     private Builder(final Key key) {
-      this.entity = DatastoreV1.Entity.newBuilder().setKey(key.getPb());
+      this.entity = com.google.datastore.v1.Entity.newBuilder().setKey(key.getPb());
       this.properties = Maps.newHashMap();
     }
 
@@ -63,12 +61,10 @@ public final class Entity {
       this(entity.getPb());
     }
 
-    private Builder(final DatastoreV1.Entity entity) {
-      this.entity = DatastoreV1.Entity.newBuilder(entity);
-      this.properties = entity.getPropertyList().stream()
-          .collect(Collectors.toMap(
-              DatastoreV1.Property::getName,
-              property -> Value.builder(property.getValue()).build()));
+    private Builder(final com.google.datastore.v1.Entity entity) {
+      this.entity = com.google.datastore.v1.Entity.newBuilder(entity);
+      this.properties = entity.getProperties().entrySet().stream()
+        .collect(Collectors.toMap(Map.Entry::getKey, e -> Value.builder(e.getValue()).build()));
     }
 
     /**
@@ -77,12 +73,14 @@ public final class Entity {
      * @return an immutable entity.
      */
     public Entity build() {
-      entity.clearProperty();
-      entity.addAllProperty(properties.entrySet().stream()
-                                .map(entry -> DatastoreV1.Property.newBuilder()
-                                    .setName(entry.getKey())
-                                    .setValue(entry.getValue().getPb()).build())
-                                .collect(Collectors.toList()));
+      entity.getMutableProperties().clear();
+      entity.putAllProperties(
+          properties
+              .entrySet()
+              .stream()
+              .collect(Collectors.toMap(
+                  Map.Entry::getKey, e -> e.getValue().getPb().toBuilder().build())));
+
       return new Entity(entity.build());
     }
 
@@ -227,7 +225,7 @@ public final class Entity {
     return new Entity.Builder(entity);
   }
 
-  static Entity.Builder builder(final DatastoreV1.Entity entity) {
+  static Entity.Builder builder(final com.google.datastore.v1.Entity entity) {
     return new Entity.Builder(entity);
   }
 
@@ -368,10 +366,11 @@ public final class Entity {
    */
   public Map<String, Value> getProperties() {
     if (properties == null) {
-      properties = ImmutableSortedMap.copyOf(entity.getPropertyList().stream()
-          .collect(Collectors.toMap(
-              DatastoreV1.Property::getName,
-              property -> Value.builder(property.getValue()).build())));
+      properties = entity
+          .getProperties()
+          .entrySet()
+          .stream()
+          .collect(Collectors.toMap(Map.Entry::getKey, e -> Value.builder(e.getValue()).build()));
     }
     return properties;
   }
@@ -413,22 +412,21 @@ public final class Entity {
     return obj.getClass() == this.getClass() || (obj instanceof Entity && Objects.equals(entity, ((Entity) obj).entity));
   }
 
-  DatastoreV1.Entity getPb() {
+  com.google.datastore.v1.Entity getPb() {
     return entity;
   }
 
-  DatastoreV1.Entity getPb(final String namespace) {
-    final List<DatastoreV1.Property> propertiesLocal = entity.getPropertyList().stream()
-        .map(property -> {
-          if (property.getValue().hasKeyValue()) {
-            return DatastoreV1.Property.newBuilder(property)
-                .setValue(Value.builder(property.getValue()).build().getPb(namespace))
-                .build();
-          }
-          return property;
-        }).collect(Collectors.toList());
-    final DatastoreV1.Entity.Builder prepared = DatastoreV1.Entity.newBuilder(entity)
-            .setKey(getKey().getPb(namespace));
-    return prepared.clearProperty().addAllProperty(propertiesLocal).build();
+  com.google.datastore.v1.Entity getPb(final String namespace) {
+    final Map<String, com.google.datastore.v1.Value> propertiesLocal = entity.getProperties()
+        .entrySet()
+        .stream()
+        .collect(Collectors.toMap(
+            Map.Entry::getKey, e -> Value.builder(e.getValue()).build().getPb(namespace)));
+
+    return com.google.datastore.v1.Entity
+        .newBuilder()
+        .putAllProperties(propertiesLocal)
+        .setKey(getKey().getPb(namespace))
+        .build();
   }
 }
