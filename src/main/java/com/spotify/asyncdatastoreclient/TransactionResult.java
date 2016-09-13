@@ -16,7 +16,6 @@
 
 package com.spotify.asyncdatastoreclient;
 
-import com.google.api.services.datastore.DatastoreV1;
 import com.google.protobuf.ByteString;
 
 /**
@@ -32,8 +31,8 @@ public final class TransactionResult implements Result {
     this.transaction = transaction;
   }
 
-  static TransactionResult build(final DatastoreV1.BeginTransactionResponse response) {
-    return response.hasTransaction() ? new TransactionResult(response.getTransaction()) : build();
+  static TransactionResult build(final com.google.datastore.v1.BeginTransactionResponse response) {
+    return new TransactionResult(response.getTransaction());
   }
 
   /**

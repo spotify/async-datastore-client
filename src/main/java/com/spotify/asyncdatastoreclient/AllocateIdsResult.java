@@ -16,7 +16,6 @@
 
 package com.spotify.asyncdatastoreclient;
 
-import com.google.api.services.datastore.DatastoreV1;
 import com.google.common.collect.ImmutableList;
 
 import java.util.List;
@@ -35,14 +34,14 @@ public final class AllocateIdsResult implements Result {
     this.keys = ImmutableList.of();
   }
 
-  private AllocateIdsResult(final List<DatastoreV1.Key> keys) {
+  private AllocateIdsResult(final List<com.google.datastore.v1.Key> keys) {
     this.keys = ImmutableList.copyOf(keys.stream()
         .map(key -> Key.builder(key).build())
         .collect(Collectors.toList()));
   }
 
-  static AllocateIdsResult build(final DatastoreV1.AllocateIdsResponse response) {
-    return new AllocateIdsResult(response.getKeyList());
+  static AllocateIdsResult build(final com.google.datastore.v1.AllocateIdsResponse response) {
+    return new AllocateIdsResult(response.getKeysList());
   }
 
   /**

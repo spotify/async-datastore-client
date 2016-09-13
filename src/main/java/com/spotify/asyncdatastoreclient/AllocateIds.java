@@ -17,7 +17,6 @@
 package com.spotify.asyncdatastoreclient;
 
 import com.google.api.client.util.Lists;
-import com.google.api.services.datastore.DatastoreV1;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -61,7 +60,7 @@ public class AllocateIds implements Statement {
     return this;
   }
 
-  List<DatastoreV1.Key> getPb(final String namespace) {
+  List<com.google.datastore.v1.Key> getPb(final String namespace) {
     return keys.stream()
         .map(key -> Key.builder(key).build().getPb(namespace))
         .collect(Collectors.toList());

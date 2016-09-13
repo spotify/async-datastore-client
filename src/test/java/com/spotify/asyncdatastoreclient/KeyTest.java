@@ -16,17 +16,11 @@
 
 package com.spotify.asyncdatastoreclient;
 
-import com.google.api.services.datastore.DatastoreV1;
-
 import org.junit.Test;
 
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.*;
 
 public class KeyTest {
 
@@ -85,8 +79,8 @@ public class KeyTest {
     assertEquals("fred", test16.getPath().get(0).getName());
     assertTrue(test16.isComplete());
 
-    final DatastoreV1.Key test17Pb = DatastoreV1.Key.newBuilder()
-        .addPathElement(DatastoreV1.Key.PathElement.newBuilder().setKind("employee").setName("fred")).build();
+    final  com.google.datastore.v1.Key test17Pb =  com.google.datastore.v1.Key.newBuilder()
+        .addPath(com.google.datastore.v1.Key.PathElement.newBuilder().setKind("employee").setName("fred")).build();
     final Key test17 = Key.builder(test17Pb).build();
     assertEquals("employee", test17.getPath().get(0).getKind());
     assertEquals("fred", test17.getPath().get(0).getName());
@@ -143,7 +137,7 @@ public class KeyTest {
   @Test
   public void testGetPb() throws Exception {
     final Key test1 = Key.builder().build();
-    assertEquals("namespace", test1.getPb("namespace").getPartitionId().getNamespace());
+    assertEquals("namespace", test1.getPb("namespace").getPartitionId().getNamespaceId());
 
     // Passing in null should not throw exception
     assertNotNull(test1.getPb(null));

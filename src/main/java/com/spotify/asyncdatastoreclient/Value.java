@@ -16,10 +16,12 @@
 
 package com.spotify.asyncdatastoreclient;
 
-import com.google.api.services.datastore.DatastoreV1;
 import com.google.common.collect.ImmutableList;
+import com.google.datastore.v1.ArrayValue;
 import com.google.protobuf.ByteString;
+import com.google.protobuf.Timestamp;
 
+import java.time.Instant;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
@@ -33,30 +35,34 @@ import java.util.stream.Collectors;
  */
 public final class Value {
 
-  private final DatastoreV1.Value value;
+  private final com.google.datastore.v1.Value value;
 
-  private Value(final DatastoreV1.Value value) {
+  private Value(final com.google.datastore.v1.Value value) {
     this.value = value;
   }
 
   public static final class Builder {
 
-    private final DatastoreV1.Value.Builder value;
+    private final com.google.datastore.v1.Value.Builder value;
 
-    private Builder(DatastoreV1.Value.Builder builder) {
+    private boolean excludeFromIndexes;
+
+    private Builder(com.google.datastore.v1.Value.Builder builder) {
         this.value = builder;
     }
 
     private Builder() {
-      this.value = DatastoreV1.Value.newBuilder();
+      this.value = com.google.datastore.v1.Value.newBuilder();
+      this.excludeFromIndexes = false;
     }
 
     private Builder(final Value value) {
       this(value.getPb());
     }
 
-    private Builder(final DatastoreV1.Value value) {
-      this.value = DatastoreV1.Value.newBuilder(value);
+    private Builder(final com.google.datastore.v1.Value value) {
+      this.value = com.google.datastore.v1.Value.newBuilder(value);
+      this.excludeFromIndexes = value.getExcludeFromIndexes();
     }
 
     /**
@@ -65,7 +71,7 @@ public final class Value {
      * @return an immutable value.
      */
     public Value build() {
-      return new Value(value.build());
+      return new Value(value.setExcludeFromIndexes(excludeFromIndexes).build());
     }
 
     /**
@@ -84,11 +90,11 @@ public final class Value {
       } else if (value instanceof Boolean) {
         this.value.setBooleanValue((Boolean) value);
       } else if (value instanceof Date) {
-        this.value.setTimestampMicrosecondsValue(((Date) value).getTime() * 1000L);
+        this.value.setTimestampValue(toTimestamp((Date) value));
       } else if (value instanceof ByteString) {
         this.value.setBlobValue((ByteString) value);
       } else if (value instanceof Entity) {
-        this.value.setEntityValue(((Entity) value).getPb()).setIndexed(false);
+        this.value.setEntityValue(((Entity) value).getPb()).setExcludeFromIndexes(true);
       } else if (value instanceof Key) {
         this.value.setKeyValue(((Key) value).getPb());
       } else if (value instanceof Double) {
@@ -116,9 +122,16 @@ public final class Value {
      * that are not recognised.
      */
     public Builder value(final List<Object> values) {
-      this.value.addAllListValue(values.stream()
-                                     .map(valueLocal -> Value.builder(valueLocal).build().getPb())
-                                     .collect(Collectors.toList()));
+      final ArrayValue arrayValues = ArrayValue
+          .newBuilder()
+          .addAllValues(
+              values
+                  .stream()
+                  .map(v -> Value.builder(v).build().getPb()).collect(Collectors.toList()))
+          .build();
+
+      this.value.setArrayValue(arrayValues);
+
       return this;
     }
 
@@ -129,9 +142,19 @@ public final class Value {
      * @return this value builder.
      */
     public Builder indexed(final boolean indexed) {
-      this.value.setIndexed(indexed);
+      this.excludeFromIndexes = !indexed;
       return this;
     }
+
+  }
+
+  private static Timestamp toTimestamp(Date date) {
+    final long millis = date.getTime();
+    return Timestamp
+        .newBuilder()
+        .setSeconds(millis / 1000)
+        .setNanos((int) ((millis % 1000) * 1000000))
+        .build();
   }
 
   /**
@@ -150,7 +173,7 @@ public final class Value {
    * @return A new value builder.
    */
   public static Value.Builder from(final String value) {
-    return new Value.Builder(DatastoreV1.Value.newBuilder().setStringValue(value));
+    return new Value.Builder(com.google.datastore.v1.Value.newBuilder().setStringValue(value));
   }
 
   /**
@@ -160,7 +183,7 @@ public final class Value {
    * @return A new value builder.
    */
   public static Value.Builder from(final boolean value) {
-    return new Value.Builder(DatastoreV1.Value.newBuilder().setBooleanValue(value));
+    return new Value.Builder(com.google.datastore.v1.Value.newBuilder().setBooleanValue(value));
   }
 
   /**
@@ -170,8 +193,7 @@ public final class Value {
    * @return A new value builder.
    */
   public static Value.Builder from(final Date value) {
-    return new Value.Builder(
-        DatastoreV1.Value.newBuilder().setTimestampMicrosecondsValue(value.getTime() * 1000L));
+    return new Value.Builder(com.google.datastore.v1.Value.newBuilder().setTimestampValue(toTimestamp(value)));
   }
 
   /**
@@ -181,7 +203,7 @@ public final class Value {
    * @return A new value builder.
    */
   public static Value.Builder from(final ByteString value) {
-    return new Value.Builder(DatastoreV1.Value.newBuilder().setBlobValue(value));
+    return new Value.Builder(com.google.datastore.v1.Value.newBuilder().setBlobValue(value));
   }
 
   /**
@@ -191,7 +213,7 @@ public final class Value {
    * @return A new value builder.
    */
   public static Value.Builder from(final Entity entity) {
-    return new Value.Builder(DatastoreV1.Value.newBuilder().setEntityValue(entity.getPb()));
+    return new Value.Builder(com.google.datastore.v1.Value.newBuilder().setEntityValue(entity.getPb()));
   }
 
   /**
@@ -201,7 +223,7 @@ public final class Value {
    * @return A new value builder.
    */
   public static Value.Builder from(final Key key) {
-    return new Value.Builder(DatastoreV1.Value.newBuilder().setKeyValue(key.getPb()));
+    return new Value.Builder(com.google.datastore.v1.Value.newBuilder().setKeyValue(key.getPb()));
   }
 
   /**
@@ -211,7 +233,7 @@ public final class Value {
    * @return A new value builder.
    */
   public static Value.Builder from(final double value) {
-    return new Value.Builder(DatastoreV1.Value.newBuilder().setDoubleValue(value));
+    return new Value.Builder(com.google.datastore.v1.Value.newBuilder().setDoubleValue(value));
   }
 
   /**
@@ -221,7 +243,7 @@ public final class Value {
    * @return A new value builder.
    */
   public static Value.Builder from(final float value) {
-    return new Value.Builder(DatastoreV1.Value.newBuilder().setDoubleValue(value));
+    return new Value.Builder(com.google.datastore.v1.Value.newBuilder().setDoubleValue(value));
   }
 
   /**
@@ -231,7 +253,7 @@ public final class Value {
    * @return A new value builder.
    */
   public static Value.Builder from(final int value) {
-    return new Value.Builder(DatastoreV1.Value.newBuilder().setIntegerValue(value));
+    return new Value.Builder(com.google.datastore.v1.Value.newBuilder().setIntegerValue(value));
   }
 
   /**
@@ -241,7 +263,7 @@ public final class Value {
    * @return A new value builder.
    */
   public static Value.Builder from(final long value) {
-    return new Value.Builder(DatastoreV1.Value.newBuilder().setIntegerValue(value));
+    return new Value.Builder(com.google.datastore.v1.Value.newBuilder().setIntegerValue(value));
   }
 
   /**
@@ -251,7 +273,7 @@ public final class Value {
    * @return A new value builder containing a list.
    */
   public static Value.Builder from(final Value value) {
-    return new Value.Builder(DatastoreV1.Value.newBuilder(value.getPb()));
+    return new Value.Builder(com.google.datastore.v1.Value.newBuilder(value.getPb()));
   }
 
   /**
@@ -261,13 +283,11 @@ public final class Value {
    * @return A new value builder containing a list.
    */
   public static Value.Builder from(final List<Value> values) {
-    final DatastoreV1.Value.Builder builder = DatastoreV1.Value.newBuilder();
+    final com.google.datastore.v1.ArrayValue.Builder builder = com.google.datastore.v1.ArrayValue.newBuilder();
 
-    for (final Value v : values) {
-      builder.addListValue(v.getPb());
-    }
+    values.stream().forEach(v -> builder.addValues(v.getPb()));
 
-    return new Value.Builder(builder);
+    return new Value.Builder(com.google.datastore.v1.Value.newBuilder().setArrayValue(builder).build());
   }
 
   /**
@@ -278,15 +298,16 @@ public final class Value {
    * @return A new value builder containing a list.
    */
   public static Value.Builder from(final Value first, final Value... values) {
-    final DatastoreV1.Value.Builder builder = DatastoreV1.Value.newBuilder();
+    final com.google.datastore.v1.ArrayValue.Builder builder =
+      com.google.datastore.v1.ArrayValue.newBuilder();
 
-    builder.addListValue(first.getPb());
-
+    builder.addValues(first.getPb());
     for (final Value v : values) {
-      builder.addListValue(v.getPb());
+      builder.addValues(v.getPb());
     }
 
-    return new Value.Builder(builder);
+    return new Value.Builder(
+      com.google.datastore.v1.Value.newBuilder().setArrayValue(builder).build());
   }
 
   /**
@@ -321,7 +342,7 @@ public final class Value {
     return new Builder().value(values);
   }
 
-  static Value.Builder builder(final DatastoreV1.Value value) {
+  static Value.Builder builder(final com.google.datastore.v1.Value value) {
     return new Value.Builder(value);
   }
 
@@ -332,14 +353,14 @@ public final class Value {
    * @throws IllegalArgumentException if {@code Value} is not a string.
    */
   public String getString() {
-    if (!value.hasStringValue()) {
+    if (!isString()) {
       throw new IllegalArgumentException("Value does not contain a string.");
     }
     return value.getStringValue();
   }
 
   public boolean isString() {
-    return value.hasStringValue();
+    return value.getValueTypeCase() == com.google.datastore.v1.Value.ValueTypeCase.STRING_VALUE;
   }
 
   /**
@@ -349,7 +370,7 @@ public final class Value {
    * @throws IllegalArgumentException if {@code Value} is not an integer.
    */
   public long getInteger() {
-    if (!value.hasIntegerValue()) {
+    if (!isInteger()) {
       throw new IllegalArgumentException("Value does not contain an integer.");
     }
     return value.getIntegerValue();
@@ -361,7 +382,7 @@ public final class Value {
    * @return {@code true} if value is a integer.
    */
   public boolean isInteger() {
-    return value.hasIntegerValue();
+    return value.getValueTypeCase() == com.google.datastore.v1.Value.ValueTypeCase.INTEGER_VALUE;
   }
 
   /**
@@ -371,7 +392,7 @@ public final class Value {
    * @throws IllegalArgumentException if {@code Value} is not a boolean.
    */
   public boolean getBoolean() {
-    if (!value.hasBooleanValue()) {
+    if (!isBoolean()) {
       throw new IllegalArgumentException("Value does not contain a boolean.");
     }
     return value.getBooleanValue();
@@ -383,7 +404,7 @@ public final class Value {
    * @return {@code true} if value is a boolean.
    */
   public boolean isBoolean() {
-    return value.hasBooleanValue();
+    return value.getValueTypeCase() == com.google.datastore.v1.Value.ValueTypeCase.BOOLEAN_VALUE;
   }
 
   /**
@@ -393,7 +414,7 @@ public final class Value {
    * @throws IllegalArgumentException if {@code Value} is not a double.
    */
   public double getDouble() {
-    if (!value.hasDoubleValue()) {
+    if (!isDouble()) {
       throw new IllegalArgumentException("Value does not contain a double.");
     }
     return value.getDoubleValue();
@@ -405,7 +426,7 @@ public final class Value {
    * @return {@code true} if value is a double.
    */
   public boolean isDouble() {
-    return value.hasDoubleValue();
+    return value.getValueTypeCase() == com.google.datastore.v1.Value.ValueTypeCase.DOUBLE_VALUE;
   }
 
   /**
@@ -415,12 +436,11 @@ public final class Value {
    * @throws IllegalArgumentException if {@code Value} is not a date.
    */
   public Date getDate() {
-    if (value.hasMeaning() && value.getMeaning() == 18 && value.hasIntegerValue()) {
-      return new Date(value.getIntegerValue() / 1000L);
-    } else if (value.hasTimestampMicrosecondsValue()) {
-      return new Date(value.getTimestampMicrosecondsValue() / 1000L);
+    if (!isDate()) {
+      throw new IllegalArgumentException("Value does not contain a timestamp.");
     }
-    throw new IllegalArgumentException("Value does not contain a timestamp.");
+
+    return toDate(value.getTimestampValue());
   }
 
   /**
@@ -429,8 +449,7 @@ public final class Value {
    * @return {@code true} if value is a date.
    */
   public boolean isDate() {
-    return value.hasTimestampMicrosecondsValue()
-        || value.hasMeaning() && value.getMeaning() == 18 && value.hasIntegerValue();
+    return value.getValueTypeCase() == com.google.datastore.v1.Value.ValueTypeCase.TIMESTAMP_VALUE;
   }
 
   /**
@@ -440,13 +459,10 @@ public final class Value {
    * @throws IllegalArgumentException if {@code Value} is not a blob.
    */
   public ByteString getBlob() {
-    if (value.hasMeaning() && value.getMeaning() == 18 && value.hasStringValue()) {
-      return value.getStringValueBytes();
-    } else if (value.hasBlobValue()) {
-      return value.getBlobValue();
-    } else {
+    if (!isBlob()) {
       throw new IllegalArgumentException("Value does not contain a blob.");
     }
+    return value.getBlobValue();
   }
 
   /**
@@ -455,8 +471,7 @@ public final class Value {
    * @return {@code true} if value is a blob.
    */
   public boolean isBlob() {
-    return value.hasBlobValue()
-        || value.hasMeaning() && value.getMeaning() == 18 && value.hasStringValue();
+    return value.getValueTypeCase() == com.google.datastore.v1.Value.ValueTypeCase.BLOB_VALUE;
   }
 
   /**
@@ -466,7 +481,7 @@ public final class Value {
    * @throws IllegalArgumentException if {@code Value} is not an entity.
    */
   public Entity getEntity() {
-    if (!value.hasEntityValue()) {
+    if (!isEntity()) {
       throw new IllegalArgumentException("Value does not contain an entity.");
     }
     return Entity.builder(value.getEntityValue()).build();
@@ -478,7 +493,7 @@ public final class Value {
    * @return {@code true} if value is a entity.
    */
   public boolean isEntity() {
-    return value.hasEntityValue();
+    return value.getValueTypeCase() == com.google.datastore.v1.Value.ValueTypeCase.ENTITY_VALUE;
   }
 
   /**
@@ -488,10 +503,11 @@ public final class Value {
    * @throws IllegalArgumentException if {@code Value} is not a key.
    */
   public Key getKey() {
-    if (!value.hasKeyValue()) {
+    final com.google.datastore.v1.Key key = value.getKeyValue();
+    if (key == null) {
       throw new IllegalArgumentException("Value does not contain an key.");
     }
-    return Key.builder(value.getKeyValue()).build();
+    return Key.builder(key).build();
   }
 
   /**
@@ -500,7 +516,7 @@ public final class Value {
    * @return {@code true} if value is a key.
    */
   public boolean isKey() {
-    return value.hasKeyValue();
+    return value.getKeyValue() != null;
   }
 
   /**
@@ -509,10 +525,8 @@ public final class Value {
    * @return the list value, an empty list indicates that the value is not set.
    */
   public List<Value> getList() {
-    if (value.getListValueCount() == 0) {
-      return ImmutableList.of();
-    }
-    return ImmutableList.copyOf(value.getListValueList().stream().map(Value::new).iterator());
+    return ImmutableList.copyOf(
+      value.getArrayValue().getValuesList().stream().map(Value::new).iterator());
   }
 
   /**
@@ -522,7 +536,7 @@ public final class Value {
    * @return {@code true} if value is a list.
    */
   public boolean isList() {
-    return value.getListValueCount() > 0;
+    return value.getValueTypeCase() == com.google.datastore.v1.Value.ValueTypeCase.ARRAY_VALUE;
   }
 
   /**
@@ -567,16 +581,19 @@ public final class Value {
    * @return true if the value is indexed.
    */
   public boolean isIndexed() {
-    return value.hasIndexed() && value.getIndexed();
+    return !value.getExcludeFromIndexes();
   }
 
-  DatastoreV1.Value getPb() {
+  com.google.datastore.v1.Value getPb() {
     return value;
   }
 
-  DatastoreV1.Value getPb(final String namespace) {
-    if (value.hasKeyValue()) {
-      return DatastoreV1.Value.newBuilder(value).setKeyValue(getKey().getPb(namespace)).build();
+  com.google.datastore.v1.Value getPb(final String namespace) {
+    final com.google.datastore.v1.Key key = value.getKeyValue();
+    if (key.getPathCount() > 0) {
+      return com.google.datastore.v1.Value.
+          newBuilder(value)
+          .setKeyValue(getKey().getPb(namespace)).build();
     }
     return value;
   }
@@ -593,27 +610,37 @@ public final class Value {
 
   @Override
   public String toString() {
-    if (value.hasStringValue()) {
-      return value.getStringValue();
-    } else if (value.hasIntegerValue()) {
-      return String.valueOf(value.getIntegerValue());
-    } else if (value.hasDoubleValue()) {
-      return String.valueOf(value.getDoubleValue());
-    } else if (value.hasBooleanValue()) {
-      return String.valueOf(value.getBooleanValue());
-    } else if (value.hasTimestampMicrosecondsValue()) {
-      return getDate().toString();
-    } else if (value.hasBlobValue()) {
-      return "<binary>";
-    } else if (value.hasEntityValue()) {
-      return getEntity().toString();
-    } else if (value.hasKeyValue()) {
-      return getKey().toString();
-    } else if (value.getListValueCount() > 0) {
-      return "[" + getList().stream()
-          .map(Value::toString)
-          .collect(Collectors.joining(", ")) + "]";
+    switch (value.getValueTypeCase()) {
+      case KEY_VALUE:
+        return getKey().toString();
+      case STRING_VALUE:
+        return value.getStringValue();
+      case BLOB_VALUE:
+        return "<binary>";
+      case TIMESTAMP_VALUE:
+        return getDate().toString();
+      case INTEGER_VALUE:
+        return String.valueOf(value.getIntegerValue());
+      case DOUBLE_VALUE:
+        return String.valueOf(value.getDoubleValue());
+      case BOOLEAN_VALUE:
+        return String.valueOf(value.getBooleanValue());
+      case ENTITY_VALUE:
+        return getEntity().toString();
+      case ARRAY_VALUE:
+        return "[" +
+            getList()
+                .stream()
+                .map(Value::toString)
+                .collect(Collectors.joining(", ")) + "]";
+      case NULL_VALUE:
+        return "<null>";
+      default:
+        return value.toString();
     }
-    return value.toString();
+  }
+
+  private Date toDate(final Timestamp timestamp) {
+    return Date.from(Instant.ofEpochSecond(timestamp.getSeconds(), timestamp.getNanos()));
   }
 }

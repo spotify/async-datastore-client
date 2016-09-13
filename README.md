@@ -46,8 +46,10 @@ import com.google.common.util.concurrent.ListenableFuture;
 final DatastoreConfig config = DatastoreConfig.builder()
     .requestTimeout(1000)
     .requestRetry(3)
-    .dataset(DATASET_ID)
-    .credential(DatastoreHelper.getServiceAccountCredential(ACCOUNT, KEY_PATH))
+    .project(PROJECT_ID)
+    .credential(GoogleCredential
+        .fromStream(credentialsInputStream)
+        .createScoped(DatastoreConfig.SCOPES)))
     .build();
 
 final Datastore datastore = Datastore.create(config);
@@ -95,17 +97,10 @@ mvn clean compile
 
 By default integration tests are executed against a [Local Development Server](https://cloud.google.com/datastore/docs/tools/devserver)
 on port 8080. To run tests, first download the [Development Server](https://cloud.google.com/datastore/docs/downloads)
-and create the local datastore as follows:
+and start the emulator:
 
 ```sh
-gcd.sh create -d async-test test-project
-```
-
-This will create a project called `test-project` with a dataset ID of
-`async-test`. You then start the server as follows:
-
-```sh
-gcd.sh start --consistency=1.0 test-project
+gcloud beta emulators datastore start --host-port localhost:8080 --consistency 1.0  --project async-test --data-dir project-test
 ```
 
 > NOTE: The `--consistency=1.0` option is sometimes necessary in order
@@ -120,7 +115,7 @@ mvn verify
 Properties may also be provided to override unit test configuration:
 
 ```sh
-mvn verify -Dhost=https://www.googleapis.com -Ddataset=testing -Daccount=abc@developer.gserviceaccount.com -Dkeypath=./my-key-8ae3ab23d37.p12
+mvn verify -Dhost=https://www.googleapis.com -Dproject=testing -Dkeypath=./my-key.json
 ```
 
 ## License

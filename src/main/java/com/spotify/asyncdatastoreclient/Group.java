@@ -16,8 +16,6 @@
 
 package com.spotify.asyncdatastoreclient;
 
-import com.google.api.services.datastore.DatastoreV1;
-
 /**
  * Represents query group by.
  *
@@ -31,8 +29,8 @@ public class Group {
     this.name = name;
   }
 
-  DatastoreV1.PropertyReference getPb() {
-    return DatastoreV1.PropertyReference.newBuilder()
+  com.google.datastore.v1.PropertyReference getPb() {
+    return com.google.datastore.v1.PropertyReference.newBuilder()
         .setName(name)
         .build();
   }

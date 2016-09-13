@@ -326,6 +326,7 @@ public class QueryTest extends DatastoreTest {
     assertEquals(10, entities.size());
   }
 
+
   @Test
   public void testQueryKeyFilter() throws Exception {
     final Key record = Key.builder("record", 2345678L).build();

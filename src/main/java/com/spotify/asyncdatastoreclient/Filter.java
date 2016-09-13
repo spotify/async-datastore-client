@@ -16,8 +16,6 @@
 
 package com.spotify.asyncdatastoreclient;
 
-import com.google.api.services.datastore.DatastoreV1;
-
 /**
  * Represents query filter.
  *
@@ -45,32 +43,32 @@ public class Filter {
     this.value = value;
   }
 
-  DatastoreV1.Filter getPb() {
-    final DatastoreV1.PropertyFilter.Builder filter = DatastoreV1.PropertyFilter.newBuilder()
-        .setProperty(DatastoreV1.PropertyReference.newBuilder().setName(name))
-        .setValue(value.getPb());
+  com.google.datastore.v1.Filter getPb(final String namespace) {
+    final com.google.datastore.v1.PropertyFilter.Builder filter = com.google.datastore.v1.PropertyFilter.newBuilder()
+        .setProperty(com.google.datastore.v1.PropertyReference.newBuilder().setName(name))
+        .setValue(value.getPb(namespace));
     switch (op) {
       case LESS_THAN:
-        filter.setOperator(DatastoreV1.PropertyFilter.Operator.LESS_THAN);
+        filter.setOp(com.google.datastore.v1.PropertyFilter.Operator.LESS_THAN);
         break;
       case LESS_THAN_OR_EQUAL:
-        filter.setOperator(DatastoreV1.PropertyFilter.Operator.LESS_THAN_OR_EQUAL);
+        filter.setOp(com.google.datastore.v1.PropertyFilter.Operator.LESS_THAN_OR_EQUAL);
         break;
       case GREATER_THAN:
-        filter.setOperator(DatastoreV1.PropertyFilter.Operator.GREATER_THAN);
+        filter.setOp(com.google.datastore.v1.PropertyFilter.Operator.GREATER_THAN);
         break;
       case GREATER_THAN_OR_EQUAL:
-        filter.setOperator(DatastoreV1.PropertyFilter.Operator.GREATER_THAN_OR_EQUAL);
+        filter.setOp(com.google.datastore.v1.PropertyFilter.Operator.GREATER_THAN_OR_EQUAL);
         break;
       case EQUAL:
-        filter.setOperator(DatastoreV1.PropertyFilter.Operator.EQUAL);
+        filter.setOp(com.google.datastore.v1.PropertyFilter.Operator.EQUAL);
         break;
       case HAS_ANCESTOR:
-        filter.setOperator(DatastoreV1.PropertyFilter.Operator.HAS_ANCESTOR);
+        filter.setOp(com.google.datastore.v1.PropertyFilter.Operator.HAS_ANCESTOR);
         break;
       default:
         break;
     }
-    return DatastoreV1.Filter.newBuilder().setPropertyFilter(filter).build();
+    return com.google.datastore.v1.Filter.newBuilder().setPropertyFilter(filter).build();
   }
 }

@@ -17,8 +17,10 @@
 package com.spotify.asyncdatastoreclient;
 
 import com.google.api.client.util.Lists;
-import com.google.api.services.datastore.DatastoreV1;
+import com.google.datastore.v1.Projection;
+import com.google.datastore.v1.PropertyReference;
 import com.google.protobuf.ByteString;
+import com.google.protobuf.Int32Value;
 
 import java.util.Arrays;
 import java.util.List;
@@ -31,11 +33,11 @@ import java.util.stream.Collectors;
  */
 public class Query implements Statement {
 
-  private final DatastoreV1.Query.Builder query;
-  private final List<DatastoreV1.Filter> filters;
+  private final com.google.datastore.v1.Query.Builder query;
+  private final List<Filter> filters;
 
   Query() {
-    query = DatastoreV1.Query.newBuilder();
+    query = com.google.datastore.v1.Query.newBuilder();
     filters = Lists.newArrayList();
   }
 
@@ -46,8 +48,10 @@ public class Query implements Statement {
    * @return this query statement.
    */
   public Query keysOnly() {
-    query.addProjection(DatastoreV1.PropertyExpression.newBuilder()
-                            .setProperty(DatastoreV1.PropertyReference.newBuilder().setName("__key__")));
+    query.addProjection(
+        Projection
+            .newBuilder()
+            .setProperty(PropertyReference.newBuilder().setName("__key__").build()));
     return this;
   }
 
@@ -69,8 +73,11 @@ public class Query implements Statement {
    */
   public Query properties(final List<String> properties) {
     query.addAllProjection(properties.stream()
-                               .map(property -> DatastoreV1.PropertyExpression.newBuilder()
-                                   .setProperty(DatastoreV1.PropertyReference.newBuilder().setName(property)).build())
+                               .map(property -> Projection.newBuilder()
+                                   .setProperty(com.google.datastore.v1.PropertyReference
+                                     .newBuilder()
+                                     .setName(property))
+                                  .build())
                                .collect(Collectors.toList()));
     return this;
   }
@@ -82,7 +89,7 @@ public class Query implements Statement {
    * @return this query statement.
    */
   public Query kindOf(final String kind) {
-    query.addKind(DatastoreV1.KindExpression.newBuilder().setName(kind).build());
+    query.addKind(com.google.datastore.v1.KindExpression.newBuilder().setName(kind));
     return this;
   }
 
@@ -93,7 +100,7 @@ public class Query implements Statement {
    * @return this query statement.
    */
   public Query filterBy(final Filter filter) {
-    filters.add(filter.getPb());
+    filters.add(filter);
     return this;
   }
 
@@ -115,7 +122,7 @@ public class Query implements Statement {
    * @return this query statement.
    */
   public Query groupBy(final Group group) {
-    query.addGroupBy(group.getPb());
+    query.addDistinctOn(group.getPb());
     return this;
   }
 
@@ -141,19 +148,19 @@ public class Query implements Statement {
    * @return this query statement.
    */
   public Query limit(final int limit) {
-    query.setLimit(limit);
+    query.setLimit(Int32Value.newBuilder().setValue(limit));
     return this;
   }
 
-  DatastoreV1.Query getPb() {
+  com.google.datastore.v1.Query getPb(String namespace) {
     if (filters.size() == 1) {
-      query.setFilter(filters.get(0));
+      query.setFilter(filters.get(0).getPb(namespace));
     } else if (filters.size() > 1) {
-      query.setFilter(DatastoreV1.Filter.newBuilder()
+      query.setFilter(com.google.datastore.v1.Filter.newBuilder()
                           .setCompositeFilter(
-                              DatastoreV1.CompositeFilter.newBuilder()
-                                  .addAllFilter(filters)
-                                  .setOperator(DatastoreV1.CompositeFilter.Operator.AND)));
+                              com.google.datastore.v1.CompositeFilter.newBuilder()
+                                  .addAllFilters(filters.stream().map(f -> f.getPb(namespace)).collect(Collectors.toList()))
+                                  .setOp(com.google.datastore.v1.CompositeFilter.Operator.AND)));
     }
     return query.build();
   }

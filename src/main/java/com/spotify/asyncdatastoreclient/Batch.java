@@ -17,16 +17,17 @@
 package com.spotify.asyncdatastoreclient;
 
 import com.google.api.client.util.Lists;
-import com.google.api.services.datastore.DatastoreV1;
+import com.google.datastore.v1.Mutation;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * A batch mutation statement.
  *
  * Will batch a collection of mutation operations into a single operation.
  */
-public class Batch implements MutationStatement {
+public class Batch {
 
   private final List<MutationStatement> statements = Lists.newArrayList();
 
@@ -41,12 +42,11 @@ public class Batch implements MutationStatement {
     return this;
   }
 
-  @Override
-  public DatastoreV1.Mutation getPb(final String namespace) {
-    final DatastoreV1.Mutation.Builder mutation = DatastoreV1.Mutation.newBuilder();
-    for (final MutationStatement statement : statements) {
-      mutation.mergeFrom(statement.getPb(namespace));
-    }
-    return mutation.build();
+  public List<Mutation> getPb(final String namespace) {
+    return statements
+        .stream()
+        .map(m -> m.getPb(namespace))
+        .collect(Collectors.toList());
   }
+
 }

@@ -16,10 +16,9 @@
 
 package com.spotify.asyncdatastoreclient.example;
 
+import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
 import com.google.api.client.util.Lists;
-import com.google.api.services.datastore.client.DatastoreHelper;
 import com.google.common.base.Throwables;
-
 import com.spotify.asyncdatastoreclient.Batch;
 import com.spotify.asyncdatastoreclient.Datastore;
 import com.spotify.asyncdatastoreclient.DatastoreConfig;
@@ -116,9 +115,9 @@ public final class Example {
         .requestTimeout(1000)
         .maxConnections(5)
         .requestRetry(3)
-        .dataset("my-dataset")
+        .project("my-dataset")
         .namespace("my-namespace")
-        .credential(DatastoreHelper.getComputeEngineCredential())
+        .credential(GoogleCredential.getApplicationDefault())
         .build();
 
     final Datastore datastore = Datastore.create(config);

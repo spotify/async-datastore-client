@@ -53,23 +53,6 @@ public class TransactionTest extends DatastoreTest {
   }
 
   @Test
-  public void testInsertWithSerializable() throws Exception {
-    final TransactionResult txn = datastore.transaction(Datastore.IsolationLevel.SERIALIZABLE);
-
-    final Insert insert = QueryBuilder.insert("employee")
-        .value("fullname", "Fred Blinge")
-        .value("age", 40, false);
-
-    final MutationResult insertResult = datastore.execute(insert, txn);
-
-    final KeyQuery get = QueryBuilder.query(insertResult.getInsertKey());
-    final QueryResult getResult = datastore.execute(get);
-
-    assertEquals("Fred Blinge", getResult.getEntity().getString("fullname"));
-    assertEquals(40, getResult.getEntity().getInteger("age").intValue());
-  }
-
-  @Test
   public void testInsertAsync() throws Exception {
     final ListenableFuture<TransactionResult> txn = datastore.transactionAsync();
 

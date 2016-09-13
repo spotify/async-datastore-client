@@ -16,7 +16,6 @@
 
 package com.spotify.asyncdatastoreclient;
 
-import com.google.api.services.datastore.DatastoreV1;
 import com.google.common.collect.ImmutableList;
 
 import java.util.List;
@@ -29,14 +28,21 @@ import java.util.stream.Collectors;
  */
 public final class MutationResult implements Result {
 
-  private final DatastoreV1.MutationResult result;
+  private final List<com.google.datastore.v1.MutationResult> result;
+  private final int indexUpdates;
 
-  private MutationResult(final DatastoreV1.MutationResult result) {
-    this.result = result;
+  private MutationResult(final com.google.datastore.v1.MutationResult result, int indexUpdates) {
+    this.result = ImmutableList.of(result);
+    this.indexUpdates = indexUpdates;
   }
 
-  static MutationResult build(final DatastoreV1.CommitResponse response) {
-    return response.hasMutationResult() ? new MutationResult(response.getMutationResult()) : build();
+  private MutationResult(final List<com.google.datastore.v1.MutationResult> results, int indexUpdates) {
+    this.result = ImmutableList.copyOf(results);
+    this.indexUpdates = indexUpdates;
+  }
+
+  static MutationResult build(final com.google.datastore.v1.CommitResponse response) {
+    return new MutationResult(response.getMutationResultsList(), response.getIndexUpdates());
   }
 
   /**
@@ -45,7 +51,7 @@ public final class MutationResult implements Result {
    * @return a new empty mutation result.
    */
   public static MutationResult build() {
-    return new MutationResult(DatastoreV1.MutationResult.getDefaultInstance());
+    return new MutationResult(com.google.datastore.v1.MutationResult.getDefaultInstance(), 0);
   }
 
   /**
@@ -56,10 +62,10 @@ public final class MutationResult implements Result {
    * @return a key that describes the newly inserted entity.
    */
   public Key getInsertKey() {
-    if (result.getInsertAutoIdKeyCount() == 0) {
+    if (result.isEmpty()) {
       return null;
     }
-    return Key.builder(result.getInsertAutoIdKey(0)).build();
+    return Key.builder(result.get(0).getKey()).build();
   }
 
   /**
@@ -69,8 +75,8 @@ public final class MutationResult implements Result {
    * @return a list of keys that describe the newly inserted entities.
    */
   public List<Key> getInsertKeys() {
-    return ImmutableList.copyOf(result.getInsertAutoIdKeyList().stream()
-        .map(key -> Key.builder(key).build())
+    return ImmutableList.copyOf(result.stream()
+        .map(r -> Key.builder(r.getKey()).build())
         .collect(Collectors.toList()));
   }
 
@@ -80,6 +86,6 @@ public final class MutationResult implements Result {
    * @return the number of index updates.
    */
   public int getIndexUpdates() {
-    return result.getIndexUpdates();
+    return indexUpdates;
   }
 }

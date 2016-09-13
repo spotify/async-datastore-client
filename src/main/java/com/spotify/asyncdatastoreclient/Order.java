@@ -16,8 +16,6 @@
 
 package com.spotify.asyncdatastoreclient;
 
-import com.google.api.services.datastore.DatastoreV1;
-
 /**
  * Represents query order.
  *
@@ -39,13 +37,13 @@ public class Order {
     this.dir = dir;
   }
 
-  DatastoreV1.PropertyOrder getPb() {
-    final DatastoreV1.PropertyOrder.Builder order = DatastoreV1.PropertyOrder.newBuilder()
-        .setProperty(DatastoreV1.PropertyReference.newBuilder().setName(name));
+  com.google.datastore.v1.PropertyOrder getPb() {
+    final com.google.datastore.v1.PropertyOrder.Builder order = com.google.datastore.v1.PropertyOrder.newBuilder()
+        .setProperty(com.google.datastore.v1.PropertyReference.newBuilder().setName(name));
     if (dir == Direction.ASCENDING) {
-      order.setDirection(DatastoreV1.PropertyOrder.Direction.ASCENDING);
+      order.setDirection(com.google.datastore.v1.PropertyOrder.Direction.ASCENDING);
     } else {
-      order.setDirection(DatastoreV1.PropertyOrder.Direction.DESCENDING);
+      order.setDirection(com.google.datastore.v1.PropertyOrder.Direction.DESCENDING);
     }
     return order.build();
   }
