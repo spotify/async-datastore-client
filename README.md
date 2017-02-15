@@ -26,7 +26,7 @@ Add this to your pom.xml file
 <dependency>
   <groupId>com.spotify</groupId>
   <artifactId>async-datastore-client</artifactId>
-  <version>1.0.4</version>
+  <version>2.0.0</version>
 </dependency>
 ```
 
@@ -100,7 +100,7 @@ on port 8080. To run tests, first download the [Development Server](https://clou
 and start the emulator:
 
 ```sh
-gcloud beta emulators datastore start --host-port localhost:8080 --consistency 1.0  --project async-test --data-dir project-test
+gcloud beta emulators datastore start --host-port localhost:8080 --consistency 1.0 --project async-test --data-dir project-test
 ```
 
 > NOTE: The `--consistency=1.0` option is sometimes necessary in order
