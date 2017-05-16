@@ -81,7 +81,7 @@ public abstract class DatastoreTest {
   }
 
   @After
-  public void after() {
+  public void after() throws Exception {
     datastore.close();
   }
 }
