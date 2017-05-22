@@ -143,7 +143,7 @@ final class DatastoreImpl implements Datastore {
 
   @Override
   public TransactionResult transaction() throws DatastoreException {
-    return Futures.get(transactionAsync(), DatastoreException.class);
+    return Futures.getChecked(transactionAsync(), DatastoreException.class);
   }
 
   @Override
@@ -156,7 +156,7 @@ final class DatastoreImpl implements Datastore {
     } catch (final Exception e) {
       return Futures.immediateFailedFuture(new DatastoreException(e));
     }
-    return Futures.transform(httpResponse, (Response response) -> {
+    return Futures.transformAsync(httpResponse, response -> {
       if (!isSuccessful(response.getStatusCode())) {
         throw new DatastoreException(response.getStatusCode(), response.getResponseBody());
       }
@@ -167,12 +167,12 @@ final class DatastoreImpl implements Datastore {
 
   @Override
   public RollbackResult rollback(final TransactionResult txn) throws DatastoreException {
-    return Futures.get(rollbackAsync(Futures.immediateFuture(txn)), DatastoreException.class);
+    return Futures.getChecked(rollbackAsync(Futures.immediateFuture(txn)), DatastoreException.class);
   }
 
   @Override
   public ListenableFuture<RollbackResult> rollbackAsync(final ListenableFuture<TransactionResult> txn) {
-    final ListenableFuture<Response> httpResponse = Futures.transform(txn, (TransactionResult result) -> {
+    final ListenableFuture<Response> httpResponse = Futures.transformAsync(txn, result -> {
       final ByteString transaction = result.getTransaction();
       if (transaction == null) {
         throw new DatastoreException("Invalid transaction.");
@@ -181,7 +181,7 @@ final class DatastoreImpl implements Datastore {
       final ProtoHttpContent payload = new ProtoHttpContent(request.build());
       return ListenableFutureAdapter.asGuavaFuture(prepareRequest("rollback", payload).execute());
     });
-    return Futures.transform(httpResponse, (Response response) -> {
+    return Futures.transformAsync(httpResponse, response -> {
       if (!isSuccessful(response.getStatusCode())) {
         throw new DatastoreException(response.getStatusCode(), response.getResponseBody());
       }
@@ -192,7 +192,7 @@ final class DatastoreImpl implements Datastore {
 
   @Override
   public MutationResult commit(final TransactionResult txn) throws DatastoreException {
-    return Futures.get(executeAsync((MutationStatement) null, Futures.immediateFuture(txn)), DatastoreException.class);
+    return Futures.getChecked(executeAsync((MutationStatement) null, Futures.immediateFuture(txn)), DatastoreException.class);
   }
 
   @Override
@@ -202,7 +202,7 @@ final class DatastoreImpl implements Datastore {
 
   @Override
   public AllocateIdsResult execute(final AllocateIds statement) throws DatastoreException {
-    return Futures.get(executeAsync(statement), DatastoreException.class);
+    return Futures.getChecked(executeAsync(statement), DatastoreException.class);
   }
 
   @Override
@@ -216,7 +216,7 @@ final class DatastoreImpl implements Datastore {
     } catch (final Exception e) {
       return Futures.immediateFailedFuture(new DatastoreException(e));
     }
-    return Futures.transform(httpResponse, (Response response) -> {
+    return Futures.transformAsync(httpResponse, response -> {
       if (!isSuccessful(response.getStatusCode())) {
         throw new DatastoreException(response.getStatusCode(), response.getResponseBody());
       }
@@ -227,12 +227,12 @@ final class DatastoreImpl implements Datastore {
 
   @Override
   public QueryResult execute(final KeyQuery statement) throws DatastoreException {
-    return Futures.get(executeAsync(statement), DatastoreException.class);
+    return Futures.getChecked(executeAsync(statement), DatastoreException.class);
   }
 
   @Override
   public QueryResult execute(final List<KeyQuery> statements) throws DatastoreException {
-    return Futures.get(executeAsync(statements), DatastoreException.class);
+    return Futures.getChecked(executeAsync(statements), DatastoreException.class);
   }
 
   @Override
@@ -247,12 +247,12 @@ final class DatastoreImpl implements Datastore {
 
   @Override
   public QueryResult execute(final KeyQuery statement, final TransactionResult txn) throws DatastoreException {
-    return Futures.get(executeAsync(statement, Futures.immediateFuture(txn)), DatastoreException.class);
+    return Futures.getChecked(executeAsync(statement, Futures.immediateFuture(txn)), DatastoreException.class);
   }
 
   @Override
   public QueryResult execute(final List<KeyQuery> statements, final TransactionResult txn) throws DatastoreException {
-    return Futures.get(executeAsync(statements, Futures.immediateFuture(txn)), DatastoreException.class);
+    return Futures.getChecked(executeAsync(statements, Futures.immediateFuture(txn)), DatastoreException.class);
   }
 
   @Override
@@ -262,7 +262,7 @@ final class DatastoreImpl implements Datastore {
 
   @Override
   public ListenableFuture<QueryResult> executeAsync(final List<KeyQuery> statements, final ListenableFuture<TransactionResult> txn) {
-    final ListenableFuture<Response> httpResponse = Futures.transform(txn, (TransactionResult result) -> {
+    final ListenableFuture<Response> httpResponse = Futures.transformAsync(txn, result -> {
       final List<com.google.datastore.v1.Key> keys = statements
         .stream().map(s -> s.getKey().getPb(config.getNamespace())).collect(Collectors.toList());
       final LookupRequest.Builder request = LookupRequest.newBuilder().addAllKeys(keys);
@@ -273,7 +273,7 @@ final class DatastoreImpl implements Datastore {
       final ProtoHttpContent payload = new ProtoHttpContent(request.build());
       return ListenableFutureAdapter.asGuavaFuture(prepareRequest("lookup", payload).execute());
     });
-    return Futures.transform(httpResponse, (Response response) -> {
+    return Futures.transformAsync(httpResponse, response -> {
       if (!isSuccessful(response.getStatusCode())) {
         throw new DatastoreException(response.getStatusCode(), response.getResponseBody());
       }
@@ -284,7 +284,7 @@ final class DatastoreImpl implements Datastore {
 
   @Override
   public MutationResult execute(final MutationStatement statement) throws DatastoreException {
-    return Futures.get(executeAsync(statement), DatastoreException.class);
+    return Futures.getChecked(executeAsync(statement), DatastoreException.class);
   }
 
   @Override
@@ -294,7 +294,7 @@ final class DatastoreImpl implements Datastore {
 
   @Override
   public MutationResult execute(final MutationStatement statement, final TransactionResult txn) throws DatastoreException {
-    return Futures.get(executeAsync(statement, Futures.immediateFuture(txn)), DatastoreException.class);
+    return Futures.getChecked(executeAsync(statement, Futures.immediateFuture(txn)), DatastoreException.class);
   }
 
   @Override
@@ -309,7 +309,7 @@ final class DatastoreImpl implements Datastore {
 
   @Override
   public MutationResult execute(final Batch batch) throws DatastoreException {
-    return Futures.get(executeAsync(batch), DatastoreException.class);
+    return Futures.getChecked(executeAsync(batch), DatastoreException.class);
   }
 
   @Override
@@ -319,7 +319,7 @@ final class DatastoreImpl implements Datastore {
 
   @Override
   public MutationResult execute(final Batch batch, final TransactionResult txn) throws DatastoreException {
-    return Futures.get(executeAsync(batch, Futures.immediateFuture(txn)), DatastoreException.class);
+    return Futures.getChecked(executeAsync(batch, Futures.immediateFuture(txn)), DatastoreException.class);
   }
 
   @Override
@@ -328,7 +328,7 @@ final class DatastoreImpl implements Datastore {
   }
 
   private ListenableFuture<MutationResult> executeAsyncMutations(final List<Mutation> mutations, final ListenableFuture<TransactionResult> txn) {
-    final ListenableFuture<Response> httpResponse = Futures.transform(txn, (TransactionResult result) -> {
+    final ListenableFuture<Response> httpResponse = Futures.transformAsync(txn, result -> {
       final CommitRequest.Builder request = CommitRequest.newBuilder();
       if (mutations != null) {
         request.addAllMutations(mutations);
@@ -343,7 +343,7 @@ final class DatastoreImpl implements Datastore {
       final ProtoHttpContent payload = new ProtoHttpContent(request.build());
       return ListenableFutureAdapter.asGuavaFuture(prepareRequest("commit", payload).execute());
     });
-    return Futures.transform(httpResponse, (Response response) -> {
+    return Futures.transformAsync(httpResponse, response -> {
       if (!isSuccessful(response.getStatusCode())) {
         throw new DatastoreException(response.getStatusCode(), response.getResponseBody());
       }
@@ -354,7 +354,7 @@ final class DatastoreImpl implements Datastore {
 
   @Override
   public QueryResult execute(final Query statement) throws DatastoreException {
-    return Futures.get(executeAsync(statement), DatastoreException.class);
+    return Futures.getChecked(executeAsync(statement), DatastoreException.class);
   }
 
   @Override
@@ -364,12 +364,12 @@ final class DatastoreImpl implements Datastore {
 
   @Override
   public QueryResult execute(final Query statement, final TransactionResult txn) throws DatastoreException {
-    return Futures.get(executeAsync(statement, Futures.immediateFuture(txn)), DatastoreException.class);
+    return Futures.getChecked(executeAsync(statement, Futures.immediateFuture(txn)), DatastoreException.class);
   }
 
   @Override
   public ListenableFuture<QueryResult> executeAsync(final Query statement, final ListenableFuture<TransactionResult> txn) {
-    final ListenableFuture<Response> httpResponse = Futures.transform(txn, (TransactionResult result) -> {
+    final ListenableFuture<Response> httpResponse = Futures.transformAsync(txn, result -> {
       final String namespace = config.getNamespace();
       final RunQueryRequest.Builder request = RunQueryRequest.newBuilder()
         .setQuery(statement.getPb(namespace != null ? namespace : ""));
@@ -383,7 +383,7 @@ final class DatastoreImpl implements Datastore {
       final ProtoHttpContent payload = new ProtoHttpContent(request.build());
       return ListenableFutureAdapter.asGuavaFuture(prepareRequest("runQuery", payload).execute());
     });
-    return Futures.transform(httpResponse, (Response response) -> {
+    return Futures.transformAsync(httpResponse, response -> {
       if (!isSuccessful(response.getStatusCode())) {
         throw new DatastoreException(response.getStatusCode(), response.getResponseBody());
       }

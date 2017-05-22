@@ -60,7 +60,7 @@ public final class ExampleAsync {
 
     final KeyQuery get = QueryBuilder.query("employee", 2345678L);
 
-    return Futures.transform(datastore.executeAsync(get, txn), (QueryResult result) -> {
+    return Futures.transformAsync(datastore.executeAsync(get, txn), result -> {
       if (result.getEntity() == null) {
         datastore.rollbackAsync(txn); // fire and forget
         return Futures.immediateFuture(MutationResult.build());
@@ -108,12 +108,10 @@ public final class ExampleAsync {
     final ListenableFuture<List<Object>> addBoth = Futures.allAsList(addFirst, addSecond);
 
     // Query the entities we've just inserted
-    final ListenableFuture<QueryResult> query = Futures.transform(addBoth, (List<Object> result) -> {
-      return queryData(datastore);
-    });
+    final ListenableFuture<QueryResult> query = Futures.transformAsync(addBoth, result -> queryData(datastore));
 
     // Print the query results before clean up
-    final ListenableFuture<MutationResult> delete = Futures.transform(query, (QueryResult result) -> {
+    final ListenableFuture<MutationResult> delete = Futures.transformAsync(query, result -> {
       for (final Entity entity : result) {
         System.out.println("Employee name: " + entity.getString("fullname"));
         System.out.println("Employee age: " + entity.getInteger("age"));

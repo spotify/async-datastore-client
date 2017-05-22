@@ -62,7 +62,7 @@ public class TransactionTest extends DatastoreTest {
 
     final ListenableFuture<MutationResult> insertResult = datastore.executeAsync(insert, txn);
 
-    final ListenableFuture<QueryResult> getResult = Futures.transform(insertResult, (MutationResult mutationResult) -> {
+    final ListenableFuture<QueryResult> getResult = Futures.transformAsync(insertResult, mutationResult -> {
       final KeyQuery get = QueryBuilder.query(mutationResult.getInsertKey());
       return datastore.executeAsync(get);
     });

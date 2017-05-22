@@ -44,7 +44,7 @@ public class QueryTest extends DatastoreTest {
 
   private String randomString(final int length) {
     return random.ints(random.nextInt(length + 1), 'a', 'z' + 1)
-        .mapToObj((i) -> (char) i)
+        .mapToObj(i -> (char) i)
         .collect(StringBuilder::new, StringBuilder::append, StringBuilder::append)
         .toString();
   }
