@@ -52,7 +52,7 @@ final DatastoreConfig config = DatastoreConfig.builder()
     .project(PROJECT_ID)
     .credential(GoogleCredential
         .fromStream(credentialsInputStream)
-        .createScoped(DatastoreConfig.SCOPES)))
+        .createScoped(DatastoreConfig.SCOPES))
     .build();
 
 final Datastore datastore = Datastore.create(config);
