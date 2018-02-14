@@ -63,12 +63,12 @@
         <dependency>
             <groupId>com.ning</groupId>
             <artifactId>async-http-client</artifactId>
-            <version>1.9.8</version>
+            <version>1.9.32</version>
         </dependency>
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
-            <version>19.0</version>
+            <version>23.0</version>
         </dependency>
         <dependency>
             <groupId>com.google.cloud.datastore</groupId>
@@ -85,12 +85,12 @@
         <dependency>
             <groupId>com.google.api-client</groupId>
             <artifactId>google-api-client</artifactId>
-            <version>1.21.0</version>
+            <version>1.23.0</version>
         </dependency>
         <dependency>
             <groupId>com.google.http-client</groupId>
             <artifactId>google-http-client-protobuf</artifactId>
-            <version>1.21.0</version>
+            <version>1.22.0</version>
         </dependency>
     </dependencies>
 
