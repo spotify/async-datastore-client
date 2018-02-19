@@ -26,11 +26,11 @@ Add this to your pom.xml file
 <dependency>
   <groupId>com.spotify</groupId>
   <artifactId>async-datastore-client</artifactId>
-  <version>3.0.0</version>
+  <version>3.0.1</version>
 </dependency>
 ```
 
-> NOTE: Version 3.0.0 depends on Guava 19 which contains breaking changes to `Futures.transform`. 
+> NOTE: Version 3.0.0+ depends on Guava 19 which contains breaking changes to `Futures.transform`. 
 If you require support for Guava version 18 or lower then use async-datastore-client version 2.1.0.
 
 ### Example: Insert an entity
