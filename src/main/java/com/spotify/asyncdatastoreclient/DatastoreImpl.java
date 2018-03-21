@@ -106,8 +106,10 @@ final class DatastoreImpl implements Datastore {
     final Credential credential = config.getCredential();
     final Long expiresIn = credential.getExpiresInSeconds();
 
-    // trigger refresh if token is about to expire
-    if (credential.getAccessToken() == null || expiresIn != null && expiresIn <= 60) {
+    // trigger refresh if token null or is about to expire
+    if (this.accessToken == null
+        || credential.getAccessToken() == null
+        || expiresIn != null && expiresIn <= 60) {
       try {
         credential.refreshToken();
         final String accessTokenLocal = credential.getAccessToken();
