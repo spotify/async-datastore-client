@@ -126,7 +126,7 @@ public class InsertTest extends DatastoreTest {
       datastore.execute(insertSecond);
       fail("Expected DatastoreException exception.");
     } catch (final DatastoreException e) {
-      assertEquals(400, e.getStatusCode().intValue()); // bad request
+      assertEquals(409, e.getStatusCode().intValue()); // conflict
     }
   }
 

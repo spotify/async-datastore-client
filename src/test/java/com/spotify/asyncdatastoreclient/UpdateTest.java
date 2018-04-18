@@ -55,7 +55,7 @@ public class UpdateTest extends DatastoreTest {
       datastore.execute(update);
       fail("Expected DatastoreException exception.");
     } catch (final DatastoreException e) {
-      assertEquals(400, e.getStatusCode().intValue()); // bad request
+      assertEquals(404, e.getStatusCode().intValue()); // not found
     }
   }
 
