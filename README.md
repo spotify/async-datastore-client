@@ -26,11 +26,11 @@ Add this to your pom.xml file
 <dependency>
   <groupId>com.spotify</groupId>
   <artifactId>async-datastore-client</artifactId>
-  <version>3.0.1</version>
+  <version>3.0.2</version>
 </dependency>
 ```
 
-> NOTE: Version 3.0.0+ depends on Guava 19 which contains breaking changes to `Futures.transform`. 
+> NOTE: Version 3.0.0+ depends on Guava 19 which contains breaking changes to `Futures.transform`.
 If you require support for Guava version 18 or lower then use async-datastore-client version 2.1.0.
 
 ### Example: Insert an entity
@@ -99,8 +99,8 @@ mvn clean compile
 ## Running tests
 
 By default integration tests are executed against a [Local Development Server](https://cloud.google.com/datastore/docs/tools/devserver)
-on port 8080. To run tests, first download the [Development Server](https://cloud.google.com/datastore/docs/downloads)
-and start the emulator:
+on port 8080. To run tests, first download the [Development Server](https://cloud.google.com/datastore/docs/downloads), at least version
+1.4.1 and start the emulator:
 
 ```sh
 gcloud beta emulators datastore start --host-port localhost:8080 --consistency 1.0 --project async-test --data-dir project-test
