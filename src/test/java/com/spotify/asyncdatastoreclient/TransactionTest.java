@@ -21,6 +21,7 @@ import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 
+import com.google.common.util.concurrent.MoreExecutors;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -65,7 +66,7 @@ public class TransactionTest extends DatastoreTest {
     final ListenableFuture<QueryResult> getResult = Futures.transformAsync(insertResult, mutationResult -> {
       final KeyQuery get = QueryBuilder.query(mutationResult.getInsertKey());
       return datastore.executeAsync(get);
-    });
+    }, MoreExecutors.directExecutor());
 
     Futures.addCallback(getResult, new FutureCallback<QueryResult>() {
       @Override
@@ -78,7 +79,7 @@ public class TransactionTest extends DatastoreTest {
       public void onFailure(final Throwable throwable) {
         fail(Throwables.getRootCause(throwable).getMessage());
       }
-    });
+    }, MoreExecutors.directExecutor());
   }
 
   @Test

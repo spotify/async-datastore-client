@@ -22,6 +22,7 @@ import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 
+import com.google.common.util.concurrent.MoreExecutors;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -476,7 +477,7 @@ public class QueryTest extends DatastoreTest {
       public void onFailure(final Throwable throwable) {
         fail(Throwables.getRootCause(throwable).getMessage());
       }
-    });
+    }, MoreExecutors.directExecutor());
   }
 
   @Test
