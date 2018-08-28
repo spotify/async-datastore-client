@@ -22,6 +22,7 @@ import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.MoreExecutors;
 import com.google.datastore.v1.AllocateIdsRequest;
 import com.google.datastore.v1.AllocateIdsResponse;
 import com.google.datastore.v1.BeginTransactionRequest;
@@ -164,7 +165,7 @@ final class DatastoreImpl implements Datastore {
       }
       final BeginTransactionResponse transaction = BeginTransactionResponse.parseFrom(streamResponse(response));
       return Futures.immediateFuture(TransactionResult.build(transaction));
-    });
+    }, MoreExecutors.directExecutor());
   }
 
   @Override
@@ -182,14 +183,14 @@ final class DatastoreImpl implements Datastore {
       final RollbackRequest.Builder request = RollbackRequest.newBuilder();
       final ProtoHttpContent payload = new ProtoHttpContent(request.build());
       return ListenableFutureAdapter.asGuavaFuture(prepareRequest("rollback", payload).execute());
-    });
+    }, MoreExecutors.directExecutor());
     return Futures.transformAsync(httpResponse, response -> {
       if (!isSuccessful(response.getStatusCode())) {
         throw new DatastoreException(response.getStatusCode(), response.getResponseBody());
       }
       final RollbackResponse rollback = RollbackResponse.parseFrom(streamResponse(response));
       return Futures.immediateFuture(RollbackResult.build(rollback));
-    });
+    }, MoreExecutors.directExecutor());
   }
 
   @Override
@@ -224,7 +225,7 @@ final class DatastoreImpl implements Datastore {
       }
       final AllocateIdsResponse allocate = AllocateIdsResponse.parseFrom(streamResponse(response));
       return Futures.immediateFuture(AllocateIdsResult.build(allocate));
-    });
+    }, MoreExecutors.directExecutor());
   }
 
   @Override
@@ -274,14 +275,14 @@ final class DatastoreImpl implements Datastore {
       }
       final ProtoHttpContent payload = new ProtoHttpContent(request.build());
       return ListenableFutureAdapter.asGuavaFuture(prepareRequest("lookup", payload).execute());
-    });
+    }, MoreExecutors.directExecutor());
     return Futures.transformAsync(httpResponse, response -> {
       if (!isSuccessful(response.getStatusCode())) {
         throw new DatastoreException(response.getStatusCode(), response.getResponseBody());
       }
       final LookupResponse query = LookupResponse.parseFrom(streamResponse(response));
       return Futures.immediateFuture(QueryResult.build(query));
-    });
+    }, MoreExecutors.directExecutor());
   }
 
   @Override
@@ -344,14 +345,14 @@ final class DatastoreImpl implements Datastore {
       }
       final ProtoHttpContent payload = new ProtoHttpContent(request.build());
       return ListenableFutureAdapter.asGuavaFuture(prepareRequest("commit", payload).execute());
-    });
+    }, MoreExecutors.directExecutor());
     return Futures.transformAsync(httpResponse, response -> {
       if (!isSuccessful(response.getStatusCode())) {
         throw new DatastoreException(response.getStatusCode(), response.getResponseBody());
       }
       final CommitResponse commit = CommitResponse.parseFrom(streamResponse(response));
       return Futures.immediateFuture(MutationResult.build(commit));
-    });
+    }, MoreExecutors.directExecutor());
   }
 
   @Override
@@ -384,13 +385,13 @@ final class DatastoreImpl implements Datastore {
       }
       final ProtoHttpContent payload = new ProtoHttpContent(request.build());
       return ListenableFutureAdapter.asGuavaFuture(prepareRequest("runQuery", payload).execute());
-    });
+    }, MoreExecutors.directExecutor());
     return Futures.transformAsync(httpResponse, response -> {
       if (!isSuccessful(response.getStatusCode())) {
         throw new DatastoreException(response.getStatusCode(), response.getResponseBody());
       }
       final RunQueryResponse query = RunQueryResponse.parseFrom(streamResponse(response));
       return Futures.immediateFuture(QueryResult.build(query));
-    });
+    }, MoreExecutors.directExecutor());
   }
 }

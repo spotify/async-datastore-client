@@ -21,6 +21,7 @@ import com.google.common.base.Throwables;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.MoreExecutors;
 import com.spotify.asyncdatastoreclient.Batch;
 import com.spotify.asyncdatastoreclient.Datastore;
 import com.spotify.asyncdatastoreclient.DatastoreConfig;
@@ -71,7 +72,7 @@ public final class ExampleAsync {
           .value("inserted", new Date())
           .value("age", 40);
       return datastore.executeAsync(insert);
-    });
+    }, MoreExecutors.directExecutor());
   }
 
   private static ListenableFuture<QueryResult> queryData(final Datastore datastore) {
@@ -108,7 +109,7 @@ public final class ExampleAsync {
     final ListenableFuture<List<Object>> addBoth = Futures.allAsList(addFirst, addSecond);
 
     // Query the entities we've just inserted
-    final ListenableFuture<QueryResult> query = Futures.transformAsync(addBoth, result -> queryData(datastore));
+    final ListenableFuture<QueryResult> query = Futures.transformAsync(addBoth, result -> queryData(datastore), MoreExecutors.directExecutor());
 
     // Print the query results before clean up
     final ListenableFuture<MutationResult> delete = Futures.transformAsync(query, result -> {
@@ -117,7 +118,7 @@ public final class ExampleAsync {
         System.out.println("Employee age: " + entity.getInteger("age"));
       }
       return deleteData(datastore);
-    });
+    }, MoreExecutors.directExecutor());
 
     Futures.addCallback(delete, new FutureCallback<MutationResult>() {
       @Override
@@ -129,6 +130,6 @@ public final class ExampleAsync {
       public void onFailure(final Throwable throwable) {
         System.err.println("Storage exception: " + Throwables.getRootCause(throwable).getMessage());
       }
-    });
+    }, MoreExecutors.directExecutor());
   }
 }
