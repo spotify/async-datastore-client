@@ -103,23 +103,26 @@ final class DatastoreImpl implements Datastore {
     client.close();
   }
 
-  private void refreshAccessToken() {
+  // package-private for testing
+  void refreshAccessToken() {
     final Credential credential = config.getCredential();
     final Long expiresIn = credential.getExpiresInSeconds();
 
-    // trigger refresh if token null or is about to expire
-    if (this.accessToken == null
-        || credential.getAccessToken() == null
+    // trigger refresh if token is null or is about to expire
+    if (credential.getAccessToken() == null
         || expiresIn != null && expiresIn <= 60) {
       try {
         credential.refreshToken();
-        final String accessTokenLocal = credential.getAccessToken();
-        if (accessTokenLocal != null) {
-          this.accessToken = accessTokenLocal;
-        }
       } catch (final IOException e) {
         log.error("Storage exception", Throwables.getRootCause(e));
       }
+    }
+
+    // update local token if the credentials token has refreshed since last update
+    final String accessTokenLocal = credential.getAccessToken();
+
+    if (this.accessToken == null || !accessToken.equals(accessTokenLocal)) {
+        this.accessToken = accessTokenLocal;
     }
   }
 
@@ -127,7 +130,8 @@ final class DatastoreImpl implements Datastore {
     return statusCode >= 200 && statusCode < 300;
   }
 
-  private AsyncHttpClient.BoundRequestBuilder prepareRequest(final String method, final ProtoHttpContent payload) throws IOException {
+  // package-private for testing
+  AsyncHttpClient.BoundRequestBuilder prepareRequest(final String method, final ProtoHttpContent payload) throws IOException {
     final AsyncHttpClient.BoundRequestBuilder builder = client.preparePost(prefixUri + method);
     builder.addHeader("Authorization", "Bearer " + accessToken);
     builder.addHeader("Content-Type", "application/x-protobuf");
