@@ -71,9 +71,9 @@
             <version>23.0</version>
         </dependency>
         <dependency>
-            <groupId>com.google.cloud.datastore</groupId>
-            <artifactId>datastore-v1-protos</artifactId>
-            <version>1.0.1</version>
+            <groupId>com.google.api.grpc</groupId>
+            <artifactId>proto-google-cloud-datastore-v1</artifactId>
+            <version>0.52.0</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
