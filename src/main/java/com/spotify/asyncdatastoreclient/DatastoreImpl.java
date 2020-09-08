@@ -39,10 +39,13 @@ import com.google.datastore.v1.RollbackResponse;
 import com.google.datastore.v1.RunQueryRequest;
 import com.google.datastore.v1.RunQueryResponse;
 import com.google.protobuf.ByteString;
-import com.ning.http.client.AsyncHttpClient;
-import com.ning.http.client.AsyncHttpClientConfig;
-import com.ning.http.client.Response;
-import com.ning.http.client.extra.ListenableFutureAdapter;
+import org.asynchttpclient.AsyncHttpClient;
+import org.asynchttpclient.AsyncHttpClientConfig;
+import org.asynchttpclient.BoundRequestBuilder;
+import org.asynchttpclient.DefaultAsyncHttpClient;
+import org.asynchttpclient.DefaultAsyncHttpClientConfig;
+import org.asynchttpclient.Response;
+import org.asynchttpclient.extras.guava.ListenableFutureAdapter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -75,7 +78,7 @@ final class DatastoreImpl implements Datastore {
 
   DatastoreImpl(final DatastoreConfig config) {
     this.config = config;
-    final AsyncHttpClientConfig httpConfig = new AsyncHttpClientConfig.Builder()
+    final AsyncHttpClientConfig httpConfig = new DefaultAsyncHttpClientConfig.Builder()
         .setConnectTimeout(config.getConnectTimeout())
         .setRequestTimeout(config.getRequestTimeout())
         .setMaxConnections(config.getMaxConnections())
@@ -83,7 +86,7 @@ final class DatastoreImpl implements Datastore {
         .setCompressionEnforced(true)
         .build();
 
-    client = new AsyncHttpClient(httpConfig);
+    client = new DefaultAsyncHttpClient(httpConfig);
     prefixUri = String.format("%s/%s/projects/%s:", config.getHost(), config.getVersion(), config.getProject());
 
     executor = Executors.newSingleThreadScheduledExecutor();
@@ -98,7 +101,7 @@ final class DatastoreImpl implements Datastore {
   }
 
   @Override
-  public void close() {
+  public void close() throws IOException {
     executor.shutdown();
     client.close();
   }
@@ -131,13 +134,12 @@ final class DatastoreImpl implements Datastore {
   }
 
   // package-private for testing
-  AsyncHttpClient.BoundRequestBuilder prepareRequest(final String method, final ProtoHttpContent payload) throws IOException {
-    final AsyncHttpClient.BoundRequestBuilder builder = client.preparePost(prefixUri + method);
+  BoundRequestBuilder prepareRequest(final String method, final ProtoHttpContent payload) throws IOException {
+    final BoundRequestBuilder builder = client.preparePost(prefixUri + method);
     builder.addHeader("Authorization", "Bearer " + accessToken);
     builder.addHeader("Content-Type", "application/x-protobuf");
     builder.addHeader("User-Agent", USER_AGENT);
     builder.addHeader("Accept-Encoding", "gzip");
-    builder.setContentLength((int) payload.getLength());
     builder.setBody(payload.getMessage().toByteArray());
     return builder;
   }

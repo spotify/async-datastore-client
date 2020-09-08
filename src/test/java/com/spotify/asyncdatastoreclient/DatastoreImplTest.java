@@ -4,7 +4,7 @@ import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.http.HttpRequest;
 import com.google.api.client.http.protobuf.ProtoHttpContent;
 import com.google.protobuf.Int32Value;
-import com.ning.http.client.Request;
+import org.asynchttpclient.Request;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -42,6 +42,6 @@ public class DatastoreImplTest {
       Int32Value.newBuilder().setValue(123).build())).build();
 
     // Make sure request is made with latest access token
-    assertEquals("Bearer access-token-2", request.getHeaders().get("Authorization").get(0));
+    assertEquals("Bearer access-token-2", request.getHeaders().get("Authorization"));
   }
 }
